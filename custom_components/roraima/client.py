@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections import deque
-from contextlib import suppress
+from collections import Counter, deque
 from datetime import datetime
 import json
 import logging
@@ -24,6 +23,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util import dt as dt_util
 
 from .announce import build_announce, fingerprint
+from .commands import Target, async_run, resolve
 from .const import (
     ANNOUNCES_PER_SECOND,
     CONF_CODE,
@@ -33,6 +33,7 @@ from .const import (
     IDLE_TIMEOUT,
     ISSUE_CONFLICT,
     ISSUE_REVOKED,
+    MAX_COMMANDS_IN_FLIGHT,
     MAX_DEVICES,
     MAX_MESSAGE_BYTES,
     MESSAGE_BURST,
@@ -47,6 +48,7 @@ from .const import (
 )
 from .link import LinkError, Outcome, async_open, outcome_for_close
 from .selection import shareable_rows
+from .states import StateRelay
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -89,6 +91,9 @@ class RoraimaClient:
         self._burst = float(MESSAGE_BURST)
         self._max_bytes = MAX_MESSAGE_BYTES
         self._tasks: set[asyncio.Task] = set()
+        self._commands: set[asyncio.Task] = set()
+        self.command_results: Counter[str] = Counter()
+        self._relay = StateRelay(hass, self._send, self._spawn)
         self._resync = Debouncer(
             hass, _LOGGER, cooldown=5, immediate=False, function=self._async_resync
         )
@@ -116,6 +121,7 @@ class RoraimaClient:
         """Stop for good: unload or removal."""
         self._stopped = True
         self._resync.async_cancel()
+        self._relay.stop()
         for task in list(self._tasks):
             task.cancel()
         if self._ws is not None:
@@ -134,12 +140,13 @@ class RoraimaClient:
     async def _async_resync(self) -> None:
         await self._async_announce(full=False)
 
-    def _spawn(self, coro) -> None:
+    def _spawn(self, coro, name: str = "announce") -> asyncio.Task:
         task = self.entry.async_create_background_task(
-            self.hass, coro, f"{DOMAIN} announce"
+            self.hass, coro, f"{DOMAIN} {name}"
         )
         self._tasks.add(task)
         task.add_done_callback(self._tasks.discard)
+        return task
 
     @callback
     def _set_status(self, status: str) -> None:
@@ -181,6 +188,7 @@ class RoraimaClient:
             return await self._async_receive(ws), True
         finally:
             self._ws = None
+            self._relay.stop()
             for task in list(self._tasks):
                 task.cancel()
             await ws.close()
@@ -265,18 +273,35 @@ class RoraimaClient:
         cmd_id = data.get("id")
         if not isinstance(cmd_id, str) or not CMD_ID.fullmatch(cmd_id):
             return
-        device = data.get("device")
-        parts = self._parts.get(device) if isinstance(device, str) else None
-        if parts is None:
-            error = "not_shared"
-        elif data.get("part") not in parts:
-            error = "part_unknown"
-        else:
-            # Commands on shared parts are not executed yet.
-            error = "action_not_allowed"
-        await self._send(
-            {"v": PROTOCOL_VERSION, "type": "resp", "id": cmd_id, "ok": False, "error": error}
-        )
+        target = resolve(self.hass, self.selected, self._parts, data)
+        if isinstance(target, str):
+            _LOGGER.warning(
+                "Refused a command from Roraima (%s): %r on %r",
+                target,
+                str(data.get("action"))[:32],
+                str(data.get("part"))[:64],
+            )
+            await self._async_reply(cmd_id, {"ok": False, "error": target})
+            return
+        if len(self._commands) >= MAX_COMMANDS_IN_FLIGHT:
+            _LOGGER.warning("Refused a command from Roraima: %s already running", len(self._commands))
+            await self._async_reply(cmd_id, {"ok": False, "error": "ha_error"})
+            return
+        task = self._spawn(self._async_command(cmd_id, target), "command")
+        self._commands.add(task)
+        task.add_done_callback(self._commands.discard)
+
+    async def _async_command(self, cmd_id: str, target: Target) -> None:
+        _LOGGER.info("Roraima runs %s on %s", target.action, target.entity_id)
+        answer = await async_run(self.hass, target)
+        try:
+            await self._async_reply(cmd_id, answer)
+        except (ClientError, ConnectionError) as err:
+            _LOGGER.debug("Answer to %s not sent: %s", cmd_id, err)
+
+    async def _async_reply(self, cmd_id: str, answer: dict[str, Any]) -> None:
+        self.command_results[answer.get("error") or "ok"] += 1
+        await self._send({"v": PROTOCOL_VERSION, "type": "resp", "id": cmd_id, **answer})
 
     async def _async_announce(self, full: bool) -> None:
         async with self._announce_lock:
@@ -287,21 +312,34 @@ class RoraimaClient:
             if full:
                 self._sent.clear()
                 self._done = None
+            messages = {
+                row_id: build_announce(self.hass, rows[row_id], self._max_bytes)
+                for row_id in selected
+            }
+            self._parts = {
+                row_id: {p["key"] for p in message["device"]["parts"]}
+                for row_id, message in messages.items()
+            }
+            self._relay.track(
+                {
+                    rows[row_id].parts[part["key"]].entity_id: (row_id, part["key"])
+                    for row_id, message in messages.items()
+                    for part in message["device"]["parts"]
+                }
+            )
+            for row_id in [r for r in self._sent if r not in messages]:
+                del self._sent[row_id]
             sent_any = False
             try:
-                for row_id in selected:
-                    message = build_announce(self.hass, rows[row_id], self._max_bytes)
-                    self._parts[row_id] = {p["key"] for p in message["device"]["parts"]}
+                for row_id, message in messages.items():
                     digest = fingerprint(message)
                     if self._sent.get(row_id) == digest:
                         continue
                     await self._send(message)
                     self._sent[row_id] = digest
+                    self._relay.recheck(row_id, message["device"]["parts"])
                     sent_any = True
                     await asyncio.sleep(1 / ANNOUNCES_PER_SECOND)
-                for row_id in [r for r in self._parts if r not in selected]:
-                    del self._parts[row_id]
-                    self._sent.pop(row_id, None)
                 if sent_any or selected != self._done:
                     await self._send(
                         {"v": PROTOCOL_VERSION, "type": "announce_done", "devices": selected}
@@ -358,5 +396,7 @@ class RoraimaClient:
             "selected": len(self.selected),
             "shared": self.shared_count,
             "parts_per_device": sorted(len(parts) for parts in self._parts.values()),
+            "followed_parts": self._relay.followed,
+            "commands": dict(self.command_results),
             "notices": list(self.notices),
         }

@@ -106,6 +106,11 @@ def _text(value: Any) -> str | None:
     return str(value)[:TEXT_MAX]
 
 
+def state_text(state: State | None) -> str:
+    """The state of a part as Roraima receives it."""
+    return str(state.state)[:TEXT_MAX] if state is not None else "unavailable"
+
+
 def _part(hass: HomeAssistant, key: str, entry: er.RegistryEntry) -> dict[str, Any]:
     state = hass.states.get(entry.entity_id)
     name = state.name if state is not None else None
@@ -121,7 +126,7 @@ def _part(hass: HomeAssistant, key: str, entry: er.RegistryEntry) -> dict[str, A
         "device_class": _text(device_class),
         "unit": _text(unit or entry.unit_of_measurement),
         "actions": part_actions(entry, state),
-        "state": _text(state.state if state is not None else "unavailable"),
+        "state": state_text(state),
     }
 
 

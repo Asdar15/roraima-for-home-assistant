@@ -74,6 +74,10 @@ def shareable_rows(hass: HomeAssistant) -> dict[str, Row]:
         row_id = device_row_id(registry_id)
         if device is None or device.disabled_by is not None or row_id is None:
             continue
+        # Service devices (Backup, Sun, weather...) are not objects to sell; sharing one by
+        # mistake would cost the seller a monthly fee.
+        if device.entry_type is dr.DeviceEntryType.SERVICE:
+            continue
         label = device.name_by_user or device.name or device.model or row_id
         area = area_reg.async_get_area(device.area_id) if device.area_id else None
         if area is not None:

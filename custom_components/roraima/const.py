@@ -36,6 +36,8 @@ MAX_MESSAGE_BYTES: Final = 262144
 MESSAGES_PER_SECOND: Final = 10
 MESSAGE_BURST: Final = 40
 ANNOUNCES_PER_SECOND: Final = 5
+# Commands running at once; one more is refused at once, so a flood cannot pile up tasks.
+MAX_COMMANDS_IN_FLIGHT: Final = 32
 
 WELCOME_TIMEOUT: Final = 10
 IDLE_TIMEOUT: Final = 95
