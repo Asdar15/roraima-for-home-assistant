@@ -36,7 +36,8 @@
       "invalid_code": "Roraima no ha aceptado el código. Comprueba que lo has copiado completo o crea una nueva conexión en el panel.",
       "cannot_connect": "No es posible contactar con Roraima. Comprueba la conexión a internet de Home Assistant y vuelve a intentarlo.",
       "too_many_devices": "Puedes compartir con Roraima hasta 256 dispositivos.",
-      "unknown": "No se ha podido completar la conexión. Vuelve a intentarlo dentro de unos minutos."
+      "unknown": "No se ha podido completar la conexión. Vuelve a intentarlo dentro de unos minutos.",
+      "code_in_use": "Otro Home Assistant ya usa este código, o este Home Assistant ya está conectado con Roraima con otro código. Revoca la conexión anterior en el panel y crea una nueva."
     },
     "abort": {
       "single_instance_allowed": "Este Home Assistant ya está conectado con Roraima.",
@@ -82,6 +83,10 @@
     "code_revoked": {
       "title": "La conexión con Roraima ha sido revocada",
       "description": "Roraima ya no acepta el código de emparejamiento de este Home Assistant, por lo que los dispositivos compartidos no se pueden controlar. Para conectarte de nuevo, crea una nueva conexión en tu panel de Roraima ({panel_url}) e introduce el nuevo código en la integración. Si ya no usas Roraima, elimina la integración."
+    },
+    "instance_conflict": {
+      "title": "Hay otra conexión con Roraima activa",
+      "description": "Roraima ha rechazado la conexión porque el código de emparejamiento pertenece a otro Home Assistant o porque este Home Assistant ya está conectado con otro código. Desde esta conexión no se pueden controlar los dispositivos compartidos. Revoca la conexión anterior en tu panel de Roraima ({panel_url}), crea una nueva e introduce el nuevo código en la integración."
     }
   }
 }

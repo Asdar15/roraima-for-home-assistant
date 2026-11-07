@@ -36,7 +36,8 @@
       "invalid_code": "Roraima nie przyjęła tego kodu. Sprawdź, czy kod został skopiowany w całości, albo utwórz nowe połączenie w panelu.",
       "cannot_connect": "Nie można połączyć się z platformą Roraima. Sprawdź połączenie Home Assistant z internetem i spróbuj ponownie.",
       "too_many_devices": "Platformie Roraima możesz udostępnić najwyżej 256 urządzeń.",
-      "unknown": "Nie udało się nawiązać połączenia. Spróbuj ponownie za kilka minut."
+      "unknown": "Nie udało się nawiązać połączenia. Spróbuj ponownie za kilka minut.",
+      "code_in_use": "Ten kod jest już używany przez inny Home Assistant albo ten Home Assistant jest już połączony z platformą Roraima innym kodem. Odwołaj stare połączenie w panelu i utwórz nowe."
     },
     "abort": {
       "single_instance_allowed": "Ten Home Assistant jest już połączony z platformą Roraima.",
@@ -82,6 +83,10 @@
     "code_revoked": {
       "title": "Połączenie z platformą Roraima zostało odwołane",
       "description": "Roraima nie akceptuje już kodu parowania tego Home Assistant, więc udostępnionymi urządzeniami nie można sterować. Aby połączyć się ponownie, utwórz nowe połączenie w panelu Roraima ({panel_url}) i wpisz nowy kod w integracji. Jeśli nie korzystasz już z platformy Roraima, usuń integrację."
+    },
+    "instance_conflict": {
+      "title": "Aktywne jest inne połączenie z platformą Roraima",
+      "description": "Roraima odrzuciła połączenie, ponieważ kod parowania należy do innego Home Assistant albo ten Home Assistant jest już połączony innym kodem. Przez to połączenie nie można sterować udostępnionymi urządzeniami. Odwołaj stare połączenie w panelu Roraima ({panel_url}), utwórz nowe i wpisz nowy kod w integracji."
     }
   }
 }

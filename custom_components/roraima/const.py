@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from typing import Final
 
 DOMAIN: Final = "roraima"
@@ -12,6 +13,8 @@ TUNNEL_URL: Final = "wss://api.roraima.io/tunnel"
 TUNNEL_URL_ENV: Final = "RORAIMA_TUNNEL_URL"
 
 PANEL_URL: Final = "https://roraima.io/vendor.php"
+
+CODE_PATTERN: Final = re.compile(r"^rha_[0-9a-f]{64}$")
 
 ALLOWED_DOMAINS: Final = (
     "switch",
@@ -26,11 +29,29 @@ ALLOWED_DOMAINS: Final = (
     "sensor",
     "binary_sensor",
 )
-READ_ONLY_DOMAINS: Final = frozenset({"sensor", "binary_sensor"})
 
+PROTOCOL_VERSION: Final = 1
 MAX_DEVICES: Final = 256
+MAX_MESSAGE_BYTES: Final = 262144
+MESSAGES_PER_SECOND: Final = 10
+MESSAGE_BURST: Final = 40
+ANNOUNCES_PER_SECOND: Final = 5
+
+WELCOME_TIMEOUT: Final = 10
+IDLE_TIMEOUT: Final = 95
+RETRY_FIRST: Final = 5
+RETRY_MAX: Final = 300
+RETRY_SLOW: Final = 60
+
+CLOSE_REVOKED: Final = 4004
+CLOSE_INSTANCE_CONFLICT: Final = 4007
+CLOSE_TOO_MANY_MESSAGES: Final = 4008
+
+ISSUE_REVOKED: Final = "code_revoked"
+ISSUE_CONFLICT: Final = "instance_conflict"
 
 CONF_CODE: Final = "code"
+CONF_INSTANCE_ID: Final = "instance_id"
 CONF_DEVICES: Final = "devices"
 
 
