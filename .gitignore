@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+.ruff_cache/
+.mypy_cache/
+
+# Local work copies
+.worktrees/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
