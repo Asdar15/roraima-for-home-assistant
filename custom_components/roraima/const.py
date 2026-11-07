@@ -12,7 +12,7 @@ TUNNEL_URL: Final = "wss://api.roraima.io/tunnel"
 # Test servers are reachable only through the container environment, never from the UI.
 TUNNEL_URL_ENV: Final = "RORAIMA_TUNNEL_URL"
 
-PANEL_URL: Final = "https://roraima.io/vendor.php"
+PANEL_URL: Final = "https://roraima.io/vendor.php?dispatch=iot_devices.manage#iot-ha-links"
 
 CODE_PATTERN: Final = re.compile(r"^rha_[0-9a-f]{64}$")
 
