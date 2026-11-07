@@ -3,6 +3,7 @@ name: Validate with HACS
 on:
   push:
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: "37 3 * * 1"
 
@@ -11,10 +12,16 @@ permissions:
 
 jobs:
   hacs:
-    # The HACS action validates public repositories only.
-    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     steps:
-      - uses: hacs/action@1ebf01c408f29afcb6406bd431bc98fd8cbb15aa # main, 2026-06-08
+      # The HACS action validates public repositories only. A scheduled run carries
+      # no repository in its event, so the visibility is read from the API.
+      - name: Read repository visibility
+        id: visibility
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "private=$(gh api "repos/${GITHUB_REPOSITORY}" --jq .private || echo true)" >> "$GITHUB_OUTPUT"
+      - if: steps.visibility.outputs.private == 'false'
+        uses: hacs/action@1ebf01c408f29afcb6406bd431bc98fd8cbb15aa # main, 2026-06-08
         with:
           category: integration
