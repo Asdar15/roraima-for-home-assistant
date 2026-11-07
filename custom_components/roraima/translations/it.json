@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Collegamento a Roraima",
+        "description": "Inserisci il codice di abbinamento che trovi nel tuo pannello di Roraima ({panel_url}). Il pannello lo mostra una volta sola, quando crei il collegamento.",
+        "data": {
+          "code": "Codice di abbinamento"
+        },
+        "data_description": {
+          "code": "Il codice lega questo Home Assistant al tuo account Roraima. Non condividerlo con nessuno."
+        }
+      },
+      "devices": {
+        "title": "Dispositivi condivisi con Roraima",
+        "description": "Roraima può comandare solo i dispositivi che scegli qui, e degli altri non riceve nessun dato. Puoi cambiare la scelta in qualsiasi momento dalle opzioni dell'integrazione.",
+        "data": {
+          "devices": "Dispositivi"
+        },
+        "data_description": {
+          "devices": "L'elenco mostra i dispositivi con interruttori, luci, serrature, tapparelle, ventilatori, climatizzatori, valvole, pulsanti o sensori, e le entità che non appartengono a nessun dispositivo. Puoi sceglierne al massimo 256."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Nuovo codice di abbinamento",
+        "description": "Roraima non accetta più il codice di questo Home Assistant. Crea un nuovo collegamento nel tuo pannello di Roraima ({panel_url}) e inserisci qui il nuovo codice.",
+        "data": {
+          "code": "Codice di abbinamento"
+        },
+        "data_description": {
+          "code": "Il codice lega questo Home Assistant al tuo account Roraima. Non condividerlo con nessuno."
+        }
+      }
+    },
+    "error": {
+      "invalid_code": "Roraima non ha accettato il codice. Controlla di averlo copiato per intero, oppure crea un nuovo collegamento nel pannello.",
+      "cannot_connect": "Roraima non è raggiungibile. Controlla la connessione a internet di Home Assistant e riprova.",
+      "too_many_devices": "Puoi condividere con Roraima al massimo 256 dispositivi.",
+      "unknown": "Non è stato possibile completare il collegamento. Riprova fra qualche minuto."
+    },
+    "abort": {
+      "single_instance_allowed": "Questo Home Assistant è già collegato a Roraima.",
+      "reauth_successful": "Il nuovo codice è stato salvato e il collegamento a Roraima è di nuovo attivo."
+    },
+    "create_entry": {
+      "default": "Home Assistant è collegato a Roraima. I dispositivi condivisi compaiono nel tuo pannello: {panel_url}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Dispositivi condivisi con Roraima",
+        "description": "Roraima può comandare solo i dispositivi che scegli qui, e degli altri non riceve nessun dato. Puoi cambiare la scelta in qualsiasi momento dalle opzioni dell'integrazione.",
+        "data": {
+          "devices": "Dispositivi"
+        },
+        "data_description": {
+          "devices": "L'elenco mostra i dispositivi con interruttori, luci, serrature, tapparelle, ventilatori, climatizzatori, valvole, pulsanti o sensori, e le entità che non appartengono a nessun dispositivo. Puoi sceglierne al massimo 256."
+        }
+      }
+    },
+    "error": {
+      "too_many_devices": "Puoi condividere con Roraima al massimo 256 dispositivi."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "name": "Collegamento",
+        "state": {
+          "connected": "Collegato",
+          "disconnected": "Non collegato",
+          "revoked": "Revocato"
+        }
+      },
+      "shared_devices": {
+        "name": "Dispositivi condivisi"
+      }
+    }
+  },
+  "issues": {
+    "code_revoked": {
+      "title": "Il collegamento a Roraima è stato revocato",
+      "description": "Roraima non accetta più il codice di abbinamento di questo Home Assistant, quindi i dispositivi condivisi non si possono comandare. Per collegarti di nuovo crea un nuovo collegamento nel tuo pannello di Roraima ({panel_url}) e inserisci il nuovo codice nell'integrazione. Se non usi più Roraima, rimuovi l'integrazione."
+    }
+  }
+}

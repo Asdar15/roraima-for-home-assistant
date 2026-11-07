@@ -1,0 +1,13 @@
+{
+  "domain": "roraima",
+  "name": "Roraima",
+  "codeowners": ["@Asdar15"],
+  "config_flow": true,
+  "documentation": "https://github.com/Asdar15/roraima-for-home-assistant",
+  "integration_type": "service",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/Asdar15/roraima-for-home-assistant/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

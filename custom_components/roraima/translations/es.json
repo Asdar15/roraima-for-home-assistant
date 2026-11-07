@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conectar con Roraima",
+        "description": "Introduce el código de emparejamiento de tu panel de Roraima ({panel_url}). El panel muestra el código una sola vez, cuando creas la conexión.",
+        "data": {
+          "code": "Código de emparejamiento"
+        },
+        "data_description": {
+          "code": "El código vincula este Home Assistant con tu cuenta de Roraima. No lo compartas."
+        }
+      },
+      "devices": {
+        "title": "Dispositivos compartidos con Roraima",
+        "description": "Roraima solo puede controlar los dispositivos que elijas aquí y no recibe ningún dato de los demás. Puedes cambiar la selección en cualquier momento desde las opciones de la integración.",
+        "data": {
+          "devices": "Dispositivos"
+        },
+        "data_description": {
+          "devices": "La lista muestra los dispositivos con interruptores, luces, cerraduras, persianas, ventiladores, climatizadores, válvulas, botones o sensores, y las entidades que no pertenecen a ningún dispositivo. Puedes elegir hasta 256."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Nuevo código de emparejamiento",
+        "description": "Roraima ya no acepta el código de este Home Assistant. Crea una nueva conexión en tu panel de Roraima ({panel_url}) e introduce aquí el nuevo código.",
+        "data": {
+          "code": "Código de emparejamiento"
+        },
+        "data_description": {
+          "code": "El código vincula este Home Assistant con tu cuenta de Roraima. No lo compartas."
+        }
+      }
+    },
+    "error": {
+      "invalid_code": "Roraima no ha aceptado el código. Comprueba que lo has copiado completo o crea una nueva conexión en el panel.",
+      "cannot_connect": "No es posible contactar con Roraima. Comprueba la conexión a internet de Home Assistant y vuelve a intentarlo.",
+      "too_many_devices": "Puedes compartir con Roraima hasta 256 dispositivos.",
+      "unknown": "No se ha podido completar la conexión. Vuelve a intentarlo dentro de unos minutos."
+    },
+    "abort": {
+      "single_instance_allowed": "Este Home Assistant ya está conectado con Roraima.",
+      "reauth_successful": "El nuevo código se ha guardado y la conexión con Roraima vuelve a estar activa."
+    },
+    "create_entry": {
+      "default": "Home Assistant está conectado con Roraima. Los dispositivos compartidos aparecen en tu panel: {panel_url}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Dispositivos compartidos con Roraima",
+        "description": "Roraima solo puede controlar los dispositivos que elijas aquí y no recibe ningún dato de los demás. Puedes cambiar la selección en cualquier momento desde las opciones de la integración.",
+        "data": {
+          "devices": "Dispositivos"
+        },
+        "data_description": {
+          "devices": "La lista muestra los dispositivos con interruptores, luces, cerraduras, persianas, ventiladores, climatizadores, válvulas, botones o sensores, y las entidades que no pertenecen a ningún dispositivo. Puedes elegir hasta 256."
+        }
+      }
+    },
+    "error": {
+      "too_many_devices": "Puedes compartir con Roraima hasta 256 dispositivos."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "name": "Conexión",
+        "state": {
+          "connected": "Conectado",
+          "disconnected": "No conectado",
+          "revoked": "Revocado"
+        }
+      },
+      "shared_devices": {
+        "name": "Dispositivos compartidos"
+      }
+    }
+  },
+  "issues": {
+    "code_revoked": {
+      "title": "La conexión con Roraima ha sido revocada",
+      "description": "Roraima ya no acepta el código de emparejamiento de este Home Assistant, por lo que los dispositivos compartidos no se pueden controlar. Para conectarte de nuevo, crea una nueva conexión en tu panel de Roraima ({panel_url}) e introduce el nuevo código en la integración. Si ya no usas Roraima, elimina la integración."
+    }
+  }
+}

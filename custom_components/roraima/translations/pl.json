@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Połączenie z platformą Roraima",
+        "description": "Wpisz kod parowania z panelu Roraima ({panel_url}). Panel pokazuje kod tylko raz, w chwili tworzenia połączenia.",
+        "data": {
+          "code": "Kod parowania"
+        },
+        "data_description": {
+          "code": "Kod łączy ten Home Assistant z Twoim kontem Roraima. Nie udostępniaj go nikomu."
+        }
+      },
+      "devices": {
+        "title": "Urządzenia udostępnione platformie Roraima",
+        "description": "Roraima może sterować tylko urządzeniami wybranymi tutaj i nie otrzymuje żadnych danych o pozostałych. Wybór możesz zmienić w każdej chwili w opcjach integracji.",
+        "data": {
+          "devices": "Urządzenia"
+        },
+        "data_description": {
+          "devices": "Lista zawiera urządzenia z przełącznikami, światłami, zamkami, roletami, wentylatorami, klimatyzatorami, zaworami, przyciskami lub czujnikami oraz encje, które nie należą do żadnego urządzenia. Możesz wybrać najwyżej 256."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Nowy kod parowania",
+        "description": "Roraima nie akceptuje już kodu tego Home Assistant. Utwórz nowe połączenie w panelu Roraima ({panel_url}) i wpisz tutaj nowy kod.",
+        "data": {
+          "code": "Kod parowania"
+        },
+        "data_description": {
+          "code": "Kod łączy ten Home Assistant z Twoim kontem Roraima. Nie udostępniaj go nikomu."
+        }
+      }
+    },
+    "error": {
+      "invalid_code": "Roraima nie przyjęła tego kodu. Sprawdź, czy kod został skopiowany w całości, albo utwórz nowe połączenie w panelu.",
+      "cannot_connect": "Nie można połączyć się z platformą Roraima. Sprawdź połączenie Home Assistant z internetem i spróbuj ponownie.",
+      "too_many_devices": "Platformie Roraima możesz udostępnić najwyżej 256 urządzeń.",
+      "unknown": "Nie udało się nawiązać połączenia. Spróbuj ponownie za kilka minut."
+    },
+    "abort": {
+      "single_instance_allowed": "Ten Home Assistant jest już połączony z platformą Roraima.",
+      "reauth_successful": "Nowy kod został zapisany, a połączenie z platformą Roraima znów działa."
+    },
+    "create_entry": {
+      "default": "Home Assistant jest połączony z platformą Roraima. Udostępnione urządzenia pojawią się w Twoim panelu: {panel_url}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Urządzenia udostępnione platformie Roraima",
+        "description": "Roraima może sterować tylko urządzeniami wybranymi tutaj i nie otrzymuje żadnych danych o pozostałych. Wybór możesz zmienić w każdej chwili w opcjach integracji.",
+        "data": {
+          "devices": "Urządzenia"
+        },
+        "data_description": {
+          "devices": "Lista zawiera urządzenia z przełącznikami, światłami, zamkami, roletami, wentylatorami, klimatyzatorami, zaworami, przyciskami lub czujnikami oraz encje, które nie należą do żadnego urządzenia. Możesz wybrać najwyżej 256."
+        }
+      }
+    },
+    "error": {
+      "too_many_devices": "Platformie Roraima możesz udostępnić najwyżej 256 urządzeń."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "name": "Połączenie",
+        "state": {
+          "connected": "Połączono",
+          "disconnected": "Brak połączenia",
+          "revoked": "Odwołano"
+        }
+      },
+      "shared_devices": {
+        "name": "Udostępnione urządzenia"
+      }
+    }
+  },
+  "issues": {
+    "code_revoked": {
+      "title": "Połączenie z platformą Roraima zostało odwołane",
+      "description": "Roraima nie akceptuje już kodu parowania tego Home Assistant, więc udostępnionymi urządzeniami nie można sterować. Aby połączyć się ponownie, utwórz nowe połączenie w panelu Roraima ({panel_url}) i wpisz nowy kod w integracji. Jeśli nie korzystasz już z platformy Roraima, usuń integrację."
+    }
+  }
+}

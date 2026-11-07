@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit Roraima verbinden",
+        "description": "Gib den Kopplungscode aus deinem Roraima-Panel ein ({panel_url}). Das Panel zeigt den Code nur einmal an, wenn du die Verbindung erstellst.",
+        "data": {
+          "code": "Kopplungscode"
+        },
+        "data_description": {
+          "code": "Der Code verbindet dieses Home Assistant mit deinem Roraima-Konto. Gib ihn nicht weiter."
+        }
+      },
+      "devices": {
+        "title": "Mit Roraima geteilte Geräte",
+        "description": "Roraima kann nur die Geräte steuern, die du hier auswählst, und erhält über die anderen keine Daten. Du kannst die Auswahl jederzeit in den Optionen der Integration ändern.",
+        "data": {
+          "devices": "Geräte"
+        },
+        "data_description": {
+          "devices": "Die Liste zeigt Geräte mit Schaltern, Lichtern, Schlössern, Rollläden, Ventilatoren, Klimageräten, Ventilen, Tasten oder Sensoren sowie Entitäten, die zu keinem Gerät gehören. Du kannst höchstens 256 auswählen."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Neuer Kopplungscode",
+        "description": "Roraima akzeptiert den Code dieses Home Assistant nicht mehr. Erstelle in deinem Roraima-Panel ({panel_url}) eine neue Verbindung und gib hier den neuen Code ein.",
+        "data": {
+          "code": "Kopplungscode"
+        },
+        "data_description": {
+          "code": "Der Code verbindet dieses Home Assistant mit deinem Roraima-Konto. Gib ihn nicht weiter."
+        }
+      }
+    },
+    "error": {
+      "invalid_code": "Roraima hat den Code nicht angenommen. Prüfe, ob du ihn vollständig kopiert hast, oder erstelle im Panel eine neue Verbindung.",
+      "cannot_connect": "Roraima ist nicht erreichbar. Prüfe die Internetverbindung von Home Assistant und versuche es erneut.",
+      "too_many_devices": "Du kannst höchstens 256 Geräte mit Roraima teilen.",
+      "unknown": "Die Verbindung konnte nicht hergestellt werden. Versuche es in einigen Minuten erneut."
+    },
+    "abort": {
+      "single_instance_allowed": "Dieses Home Assistant ist bereits mit Roraima verbunden.",
+      "reauth_successful": "Der neue Code wurde gespeichert, und die Verbindung zu Roraima ist wieder aktiv."
+    },
+    "create_entry": {
+      "default": "Home Assistant ist mit Roraima verbunden. Die geteilten Geräte erscheinen in deinem Panel: {panel_url}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Mit Roraima geteilte Geräte",
+        "description": "Roraima kann nur die Geräte steuern, die du hier auswählst, und erhält über die anderen keine Daten. Du kannst die Auswahl jederzeit in den Optionen der Integration ändern.",
+        "data": {
+          "devices": "Geräte"
+        },
+        "data_description": {
+          "devices": "Die Liste zeigt Geräte mit Schaltern, Lichtern, Schlössern, Rollläden, Ventilatoren, Klimageräten, Ventilen, Tasten oder Sensoren sowie Entitäten, die zu keinem Gerät gehören. Du kannst höchstens 256 auswählen."
+        }
+      }
+    },
+    "error": {
+      "too_many_devices": "Du kannst höchstens 256 Geräte mit Roraima teilen."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "name": "Verbindung",
+        "state": {
+          "connected": "Verbunden",
+          "disconnected": "Nicht verbunden",
+          "revoked": "Widerrufen"
+        }
+      },
+      "shared_devices": {
+        "name": "Geteilte Geräte"
+      }
+    }
+  },
+  "issues": {
+    "code_revoked": {
+      "title": "Die Verbindung zu Roraima wurde widerrufen",
+      "description": "Roraima akzeptiert den Kopplungscode dieses Home Assistant nicht mehr, daher lassen sich die geteilten Geräte nicht steuern. Um dich erneut zu verbinden, erstelle in deinem Roraima-Panel ({panel_url}) eine neue Verbindung und gib den neuen Code in der Integration ein. Wenn du Roraima nicht mehr nutzt, entferne die Integration."
+    }
+  }
+}

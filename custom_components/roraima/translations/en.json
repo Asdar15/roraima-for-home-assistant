@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Roraima",
+        "description": "Enter the pairing code from your Roraima panel ({panel_url}). The panel shows the code only once, when you create the connection.",
+        "data": {
+          "code": "Pairing code"
+        },
+        "data_description": {
+          "code": "The code links this Home Assistant to your Roraima account. Do not share it."
+        }
+      },
+      "devices": {
+        "title": "Devices shared with Roraima",
+        "description": "Roraima can control only the devices you select here, and receives no data about the others. You can change the selection at any time from the integration options.",
+        "data": {
+          "devices": "Devices"
+        },
+        "data_description": {
+          "devices": "The list shows devices with switches, lights, locks, covers, fans, climate controls, valves, buttons or sensors, and entities that do not belong to a device. You can select up to 256."
+        }
+      },
+      "reauth_confirm": {
+        "title": "New pairing code",
+        "description": "Roraima no longer accepts the code of this Home Assistant. Create a new connection in your Roraima panel ({panel_url}) and enter the new code here.",
+        "data": {
+          "code": "Pairing code"
+        },
+        "data_description": {
+          "code": "The code links this Home Assistant to your Roraima account. Do not share it."
+        }
+      }
+    },
+    "error": {
+      "invalid_code": "Roraima did not accept this code. Check that you copied it in full, or create a new connection in the panel.",
+      "cannot_connect": "Roraima cannot be reached. Check the internet connection of Home Assistant and try again.",
+      "too_many_devices": "You can share up to 256 devices with Roraima.",
+      "unknown": "The connection could not be completed. Try again in a few minutes."
+    },
+    "abort": {
+      "single_instance_allowed": "This Home Assistant is already connected to Roraima.",
+      "reauth_successful": "The new code has been saved and the connection to Roraima is active again."
+    },
+    "create_entry": {
+      "default": "Home Assistant is connected to Roraima. The shared devices appear in your panel: {panel_url}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Devices shared with Roraima",
+        "description": "Roraima can control only the devices you select here, and receives no data about the others. You can change the selection at any time from the integration options.",
+        "data": {
+          "devices": "Devices"
+        },
+        "data_description": {
+          "devices": "The list shows devices with switches, lights, locks, covers, fans, climate controls, valves, buttons or sensors, and entities that do not belong to a device. You can select up to 256."
+        }
+      }
+    },
+    "error": {
+      "too_many_devices": "You can share up to 256 devices with Roraima."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "name": "Connection",
+        "state": {
+          "connected": "Connected",
+          "disconnected": "Not connected",
+          "revoked": "Revoked"
+        }
+      },
+      "shared_devices": {
+        "name": "Shared devices"
+      }
+    }
+  },
+  "issues": {
+    "code_revoked": {
+      "title": "The connection to Roraima has been revoked",
+      "description": "Roraima no longer accepts the pairing code of this Home Assistant, so the shared devices cannot be controlled. To connect again, create a new connection in your Roraima panel ({panel_url}) and enter the new code in the integration. If you no longer use Roraima, remove the integration."
+    }
+  }
+}

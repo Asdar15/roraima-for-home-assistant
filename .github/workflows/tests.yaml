@@ -1,0 +1,31 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Oldest supported release: Home Assistant 2026.1.0.
+          - python: "3.13"
+            phcc: "0.13.305"
+          # Latest release with a published test harness.
+          - python: "3.14"
+            phcc: "0.13.375"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install test dependencies
+        run: pip install "pytest-homeassistant-custom-component==${{ matrix.phcc }}"
+      - name: Run tests
+        run: python -m pytest

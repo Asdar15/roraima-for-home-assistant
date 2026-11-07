@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connexion à Roraima",
+        "description": "Saisis le code d'appairage de ton panneau Roraima ({panel_url}). Le panneau n'affiche le code qu'une seule fois, lorsque tu crées la connexion.",
+        "data": {
+          "code": "Code d'appairage"
+        },
+        "data_description": {
+          "code": "Le code relie ce Home Assistant à ton compte Roraima. Ne le communique à personne."
+        }
+      },
+      "devices": {
+        "title": "Appareils partagés avec Roraima",
+        "description": "Roraima ne peut commander que les appareils que tu choisis ici et ne reçoit aucune donnée sur les autres. Tu peux modifier ce choix à tout moment dans les options de l'intégration.",
+        "data": {
+          "devices": "Appareils"
+        },
+        "data_description": {
+          "devices": "La liste affiche les appareils dotés d'interrupteurs, de lumières, de serrures, de volets, de ventilateurs, de climatiseurs, de vannes, de boutons ou de capteurs, ainsi que les entités qui n'appartiennent à aucun appareil. Tu peux en choisir 256 au maximum."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Nouveau code d'appairage",
+        "description": "Roraima n'accepte plus le code de ce Home Assistant. Crée une nouvelle connexion dans ton panneau Roraima ({panel_url}) et saisis ici le nouveau code.",
+        "data": {
+          "code": "Code d'appairage"
+        },
+        "data_description": {
+          "code": "Le code relie ce Home Assistant à ton compte Roraima. Ne le communique à personne."
+        }
+      }
+    },
+    "error": {
+      "invalid_code": "Roraima n'a pas accepté ce code. Vérifie que tu l'as copié en entier, ou crée une nouvelle connexion dans le panneau.",
+      "cannot_connect": "Roraima est injoignable. Vérifie la connexion internet de Home Assistant et réessaie.",
+      "too_many_devices": "Tu peux partager au maximum 256 appareils avec Roraima.",
+      "unknown": "La connexion n'a pas pu être établie. Réessaie dans quelques minutes."
+    },
+    "abort": {
+      "single_instance_allowed": "Ce Home Assistant est déjà connecté à Roraima.",
+      "reauth_successful": "Le nouveau code a été enregistré et la connexion à Roraima est de nouveau active."
+    },
+    "create_entry": {
+      "default": "Home Assistant est connecté à Roraima. Les appareils partagés apparaissent dans ton panneau : {panel_url}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Appareils partagés avec Roraima",
+        "description": "Roraima ne peut commander que les appareils que tu choisis ici et ne reçoit aucune donnée sur les autres. Tu peux modifier ce choix à tout moment dans les options de l'intégration.",
+        "data": {
+          "devices": "Appareils"
+        },
+        "data_description": {
+          "devices": "La liste affiche les appareils dotés d'interrupteurs, de lumières, de serrures, de volets, de ventilateurs, de climatiseurs, de vannes, de boutons ou de capteurs, ainsi que les entités qui n'appartiennent à aucun appareil. Tu peux en choisir 256 au maximum."
+        }
+      }
+    },
+    "error": {
+      "too_many_devices": "Tu peux partager au maximum 256 appareils avec Roraima."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "name": "Connexion",
+        "state": {
+          "connected": "Connecté",
+          "disconnected": "Non connecté",
+          "revoked": "Révoqué"
+        }
+      },
+      "shared_devices": {
+        "name": "Appareils partagés"
+      }
+    }
+  },
+  "issues": {
+    "code_revoked": {
+      "title": "La connexion à Roraima a été révoquée",
+      "description": "Roraima n'accepte plus le code d'appairage de ce Home Assistant, si bien que les appareils partagés ne peuvent plus être commandés. Pour te reconnecter, crée une nouvelle connexion dans ton panneau Roraima ({panel_url}) et saisis le nouveau code dans l'intégration. Si tu n'utilises plus Roraima, supprime l'intégration."
+    }
+  }
+}

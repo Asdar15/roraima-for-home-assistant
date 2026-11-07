@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ligar à Roraima",
+        "description": "Introduz o código de emparelhamento do teu painel da Roraima ({panel_url}). O painel mostra o código uma única vez, quando crias a ligação.",
+        "data": {
+          "code": "Código de emparelhamento"
+        },
+        "data_description": {
+          "code": "O código associa este Home Assistant à tua conta Roraima. Não o partilhes."
+        }
+      },
+      "devices": {
+        "title": "Dispositivos partilhados com a Roraima",
+        "description": "A Roraima só pode comandar os dispositivos que escolheres aqui e não recebe nenhum dado sobre os outros. Podes alterar a escolha a qualquer momento nas opções da integração.",
+        "data": {
+          "devices": "Dispositivos"
+        },
+        "data_description": {
+          "devices": "A lista mostra os dispositivos com interruptores, luzes, fechaduras, estores, ventoinhas, climatizadores, válvulas, botões ou sensores, e as entidades que não pertencem a nenhum dispositivo. Podes escolher até 256."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Novo código de emparelhamento",
+        "description": "A Roraima já não aceita o código deste Home Assistant. Cria uma nova ligação no teu painel da Roraima ({panel_url}) e introduz aqui o novo código.",
+        "data": {
+          "code": "Código de emparelhamento"
+        },
+        "data_description": {
+          "code": "O código associa este Home Assistant à tua conta Roraima. Não o partilhes."
+        }
+      }
+    },
+    "error": {
+      "invalid_code": "A Roraima não aceitou o código. Verifica se o copiaste por inteiro ou cria uma nova ligação no painel.",
+      "cannot_connect": "Não é possível contactar a Roraima. Verifica a ligação à internet do Home Assistant e tenta novamente.",
+      "too_many_devices": "Podes partilhar com a Roraima até 256 dispositivos.",
+      "unknown": "Não foi possível concluir a ligação. Tenta novamente dentro de alguns minutos."
+    },
+    "abort": {
+      "single_instance_allowed": "Este Home Assistant já está ligado à Roraima.",
+      "reauth_successful": "O novo código foi guardado e a ligação à Roraima está novamente ativa."
+    },
+    "create_entry": {
+      "default": "O Home Assistant está ligado à Roraima. Os dispositivos partilhados aparecem no teu painel: {panel_url}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Dispositivos partilhados com a Roraima",
+        "description": "A Roraima só pode comandar os dispositivos que escolheres aqui e não recebe nenhum dado sobre os outros. Podes alterar a escolha a qualquer momento nas opções da integração.",
+        "data": {
+          "devices": "Dispositivos"
+        },
+        "data_description": {
+          "devices": "A lista mostra os dispositivos com interruptores, luzes, fechaduras, estores, ventoinhas, climatizadores, válvulas, botões ou sensores, e as entidades que não pertencem a nenhum dispositivo. Podes escolher até 256."
+        }
+      }
+    },
+    "error": {
+      "too_many_devices": "Podes partilhar com a Roraima até 256 dispositivos."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "name": "Ligação",
+        "state": {
+          "connected": "Ligado",
+          "disconnected": "Não ligado",
+          "revoked": "Revogado"
+        }
+      },
+      "shared_devices": {
+        "name": "Dispositivos partilhados"
+      }
+    }
+  },
+  "issues": {
+    "code_revoked": {
+      "title": "A ligação à Roraima foi revogada",
+      "description": "A Roraima já não aceita o código de emparelhamento deste Home Assistant, por isso os dispositivos partilhados não podem ser comandados. Para voltares a ligar, cria uma nova ligação no teu painel da Roraima ({panel_url}) e introduz o novo código na integração. Se já não usas a Roraima, remove a integração."
+    }
+  }
+}
