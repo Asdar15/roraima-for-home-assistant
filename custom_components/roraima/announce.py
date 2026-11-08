@@ -46,6 +46,10 @@ def _capability(entry: er.RegistryEntry, state: State | None, name: str) -> Any:
 
 def part_actions(entry: er.RegistryEntry, state: State | None) -> list[str]:
     """Return the Roraima actions this entity really supports (contract §2.4)."""
+    # Service parts (restart, factory reset, identify...) stay readable, never commandable:
+    # selling the use of a device never needs them.
+    if entry.entity_category is not None:
+        return []
     domain = entry.domain
     features = _features(entry, state)
     if domain in ("switch", "input_boolean"):

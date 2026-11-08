@@ -6,6 +6,7 @@ from typing import Any
 
 import pytest
 
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
@@ -271,6 +272,35 @@ async def test_states_only_of_shared_parts_grouped(hass: HomeAssistant, server: 
     await wait_until(lambda: len(socket.of_type("state")) == 2)
     assert socket.of_type("state")[1]["devices"] == {WASHER_ROW: {WASHER_PART: "off"}}
     assert all(LIGHT_ROW not in m["devices"] for m in socket.of_type("state"))
+    await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_service_button_is_read_only(hass: HomeAssistant, server: FakeServer) -> None:
+    """A restart button of a shared plug is announced without actions and cannot be pressed."""
+    owner = MockConfigEntry(domain="demo")
+    owner.add_to_hass(hass)
+    plug = dr.async_get(hass).async_get_or_create(
+        config_entry_id=owner.entry_id, identifiers={("demo", "presa")}, name="Presa"
+    )
+    registry = er.async_get(hass)
+    registry.async_get_or_create("switch", "demo", "presa-0", device_id=plug.id, suggested_object_id="presa")
+    registry.async_get_or_create(
+        "button", "demo", "presa-restart", device_id=plug.id, suggested_object_id="presa_riavvia",
+        entity_category=EntityCategory.CONFIG,
+    )
+    hass.states.async_set("switch.presa", "off")
+    hass.states.async_set("button.presa_riavvia", "unknown")
+    press = async_mock_service(hass, "button", "press")
+    row = f"d{plug.id}"
+    entry, socket = await _ready(hass, server, [row])
+    [announce] = socket.of_type("announce")
+    parts = {p["key"]: p for p in announce["device"]["parts"]}
+    restart = parts[part_key("button", "demo", "presa-restart")]
+    assert restart["category"] == "config" and restart["actions"] == []
+    assert parts[part_key("switch", "demo", "presa-0")]["actions"] == ["turn_on", "turn_off", "toggle"]
+    resp = await _command(socket, device=row, part=restart["key"], action="press")
+    assert resp["error"] == "action_not_allowed" and "state" not in resp
+    assert press == []
     await hass.config_entries.async_unload(entry.entry_id)
 
 
