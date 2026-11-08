@@ -95,7 +95,7 @@
   "issues": {
     "code_revoked": {
       "title": "Połączenie z platformą Roraima zostało odwołane",
-      "description": "Roraima nie akceptuje już kodu parowania tego Home Assistant, więc udostępnionymi urządzeniami nie można sterować. Aby połączyć się ponownie, utwórz nowe połączenie w panelu Roraima ({panel_url}) i wpisz nowy kod w integracji. Jeśli nie korzystasz już z platformy Roraima, usuń integrację."
+      "description": "Roraima nie akceptuje już kodu parowania tego Home Assistant, więc udostępnionymi urządzeniami nie można sterować. Aby połączyć się ponownie, utwórz nowe połączenie w panelu Roraima ({panel_url}) i wpisz nowy kod w integracji. Jeśli nie chcesz już łączyć tego Home Assistant, usuń integrację."
     },
     "instance_conflict": {
       "title": "Aktywne jest inne połączenie z platformą Roraima",

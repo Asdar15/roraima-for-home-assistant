@@ -95,7 +95,7 @@
   "issues": {
     "code_revoked": {
       "title": "A ligação à Roraima foi revogada",
-      "description": "A Roraima já não aceita o código de emparelhamento deste Home Assistant, por isso os dispositivos partilhados não podem ser comandados. Para voltares a ligar, cria uma nova ligação no teu painel da Roraima ({panel_url}) e introduz o novo código na integração. Se já não usas a Roraima, remove a integração."
+      "description": "A Roraima já não aceita o código de emparelhamento deste Home Assistant, por isso os dispositivos partilhados não podem ser comandados. Para voltares a ligar, cria uma nova ligação no teu painel da Roraima ({panel_url}) e introduz o novo código na integração. Se já não queres ligar este Home Assistant, remove a integração."
     },
     "instance_conflict": {
       "title": "Está ativa outra ligação à Roraima",

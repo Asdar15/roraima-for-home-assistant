@@ -95,7 +95,7 @@
   "issues": {
     "code_revoked": {
       "title": "The connection to Roraima has been revoked",
-      "description": "Roraima no longer accepts the pairing code of this Home Assistant, so the shared devices cannot be controlled. To connect again, create a new connection in your Roraima panel ({panel_url}) and enter the new code in the integration. If you no longer use Roraima, remove the integration."
+      "description": "Roraima no longer accepts the pairing code of this Home Assistant, so the shared devices cannot be controlled. To connect again, create a new connection in your Roraima panel ({panel_url}) and enter the new code in the integration. If you no longer want to connect this Home Assistant, remove the integration."
     },
     "instance_conflict": {
       "title": "Another connection to Roraima is active",

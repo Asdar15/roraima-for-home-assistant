@@ -95,7 +95,7 @@
   "issues": {
     "code_revoked": {
       "title": "Il collegamento a Roraima è stato revocato",
-      "description": "Roraima non accetta più il codice di abbinamento di questo Home Assistant, quindi i dispositivi condivisi non si possono comandare. Per collegarti di nuovo crea un nuovo collegamento nel tuo pannello di Roraima ({panel_url}) e inserisci il nuovo codice nell'integrazione. Se non usi più Roraima, rimuovi l'integrazione."
+      "description": "Roraima non accetta più il codice di abbinamento di questo Home Assistant, quindi i dispositivi condivisi non si possono comandare. Per collegarti di nuovo crea un nuovo collegamento nel tuo pannello di Roraima ({panel_url}) e inserisci il nuovo codice nell'integrazione. Se non vuoi più collegare questo Home Assistant, rimuovi l'integrazione."
     },
     "instance_conflict": {
       "title": "Un altro collegamento a Roraima è attivo",

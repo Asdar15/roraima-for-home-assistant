@@ -95,7 +95,7 @@
   "issues": {
     "code_revoked": {
       "title": "La connexion à Roraima a été révoquée",
-      "description": "Roraima n'accepte plus le code d'appairage de ce Home Assistant, si bien que les appareils partagés ne peuvent plus être commandés. Pour te reconnecter, crée une nouvelle connexion dans ton panneau Roraima ({panel_url}) et saisis le nouveau code dans l'intégration. Si tu n'utilises plus Roraima, supprime l'intégration."
+      "description": "Roraima n'accepte plus le code d'appairage de ce Home Assistant, si bien que les appareils partagés ne peuvent plus être commandés. Pour te reconnecter, crée une nouvelle connexion dans ton panneau Roraima ({panel_url}) et saisis le nouveau code dans l'intégration. Si tu ne veux plus connecter ce Home Assistant, supprime l'intégration."
     },
     "instance_conflict": {
       "title": "Une autre connexion à Roraima est active",
