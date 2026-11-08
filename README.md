@@ -44,7 +44,7 @@ Shared domains: `switch`, `light`, `lock`, `cover`, `fan`, `climate`, `valve`, `
 
 ## Setup
 
-1. In your Roraima panel, open **Devices** and choose **Connect Home Assistant**. The panel shows a
+1. In your Roraima panel, open **Technologies** and choose **Connect Home Assistant**. The panel shows a
    pairing code once.
 2. In Home Assistant, go to **Settings → Devices & services → Add integration**, search for
    **Roraima** and enter the code.
