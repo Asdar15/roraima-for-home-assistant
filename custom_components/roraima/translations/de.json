@@ -18,7 +18,7 @@
           "devices": "Geräte"
         },
         "data_description": {
-          "devices": "Die Liste zeigt Geräte mit Schaltern, Lichtern, Schlössern, Rollläden, Ventilatoren, Klimageräten, Ventilen, Tasten oder Sensoren sowie Entitäten, die zu keinem Gerät gehören. Du kannst höchstens 256 auswählen."
+          "devices": "Die Liste zeigt Geräte mit Schaltern, Lichtern, Schlössern, Rollläden, Ventilatoren, Klimageräten, Ventilen, Tasten oder Sensoren sowie Entitäten, die zu keinem Gerät gehören. Gruppen erscheinen nicht, weil sie auch Geräte steuern, die du nicht ausgewählt hast. Eine aus einer Vorlage (Template) erstellte Entität führt eigene Aktionen aus und kann andere Geräte steuern, wähle sie daher nur, wenn Roraima alles nutzen darf, was sie steuert. Du kannst höchstens 256 auswählen."
         }
       },
       "reauth_confirm": {
@@ -56,7 +56,7 @@
           "devices": "Geräte"
         },
         "data_description": {
-          "devices": "Die Liste zeigt Geräte mit Schaltern, Lichtern, Schlössern, Rollläden, Ventilatoren, Klimageräten, Ventilen, Tasten oder Sensoren sowie Entitäten, die zu keinem Gerät gehören. Du kannst höchstens 256 auswählen."
+          "devices": "Die Liste zeigt Geräte mit Schaltern, Lichtern, Schlössern, Rollläden, Ventilatoren, Klimageräten, Ventilen, Tasten oder Sensoren sowie Entitäten, die zu keinem Gerät gehören. Gruppen erscheinen nicht, weil sie auch Geräte steuern, die du nicht ausgewählt hast. Eine aus einer Vorlage (Template) erstellte Entität führt eigene Aktionen aus und kann andere Geräte steuern, wähle sie daher nur, wenn Roraima alles nutzen darf, was sie steuert. Du kannst höchstens 256 auswählen."
         }
       }
     },

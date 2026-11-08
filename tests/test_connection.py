@@ -6,6 +6,7 @@ from homeassistant.helpers import issue_registry as ir
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_mock_service
 
 from custom_components.roraima.const import CONF_CODE, CONF_DEVICES, CONF_INSTANCE_ID, DOMAIN
+from custom_components.roraima.selection import shareable_rows
 
 from .conftest import CODE, FakeServer, wait_until
 
@@ -113,3 +114,23 @@ async def test_ping_and_removal_revokes(hass: HomeAssistant, server: FakeServer)
     assert await hass.config_entries.async_remove(entry.entry_id)
     await hass.async_block_till_done()
     assert server.sockets[-1].of_type("revoke") == [{"v": 1, "type": "revoke"}]
+
+
+async def test_groups_are_never_offered(hass: HomeAssistant) -> None:
+    """A group moves entities that were not chosen: it is neither offered nor commandable."""
+    _test_helpers(hass)
+    registry = er.async_get(hass)
+    registry.async_get_or_create(
+        "lock", "group", "all_doors", suggested_object_id="all_doors", original_name="All doors"
+    )
+    hass.states.async_set(
+        "lock.all_doors", "locked", {"entity_id": ["lock.front", "lock.back"]}
+    )
+    registry.async_get_or_create(
+        "light", "hue", "room-1", suggested_object_id="living_room", original_name="Living room"
+    )
+    hass.states.async_set(
+        "light.living_room", "off", {"entity_id": ("light.a", "light.b")}
+    )
+    labels = [row.label for row in shareable_rows(hass).values()]
+    assert labels == ["Lavatrice di prova HAI", "Luce lavanderia di prova HAI"]

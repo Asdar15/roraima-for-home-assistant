@@ -18,7 +18,7 @@
           "devices": "Dispositivos"
         },
         "data_description": {
-          "devices": "A lista mostra os dispositivos com interruptores, luzes, fechaduras, estores, ventoinhas, climatizadores, válvulas, botões ou sensores, e as entidades que não pertencem a nenhum dispositivo. Podes escolher até 256."
+          "devices": "A lista mostra os dispositivos com interruptores, luzes, fechaduras, estores, ventoinhas, climatizadores, válvulas, botões ou sensores, e as entidades que não pertencem a nenhum dispositivo. Os grupos não aparecem, porque também comandam dispositivos que não escolheste. Uma entidade criada a partir de um modelo (template) executa ações próprias e pode comandar outros dispositivos, por isso escolhe-a apenas se a Roraima puder usar tudo o que ela comanda. Podes escolher até 256."
         }
       },
       "reauth_confirm": {
@@ -56,7 +56,7 @@
           "devices": "Dispositivos"
         },
         "data_description": {
-          "devices": "A lista mostra os dispositivos com interruptores, luzes, fechaduras, estores, ventoinhas, climatizadores, válvulas, botões ou sensores, e as entidades que não pertencem a nenhum dispositivo. Podes escolher até 256."
+          "devices": "A lista mostra os dispositivos com interruptores, luzes, fechaduras, estores, ventoinhas, climatizadores, válvulas, botões ou sensores, e as entidades que não pertencem a nenhum dispositivo. Os grupos não aparecem, porque também comandam dispositivos que não escolheste. Uma entidade criada a partir de um modelo (template) executa ações próprias e pode comandar outros dispositivos, por isso escolhe-a apenas se a Roraima puder usar tudo o que ela comanda. Podes escolher até 256."
         }
       }
     },

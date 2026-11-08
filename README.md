@@ -15,15 +15,18 @@ the devices you choose can be used in the rentals and services you sell on Rorai
   those devices, and can act only on them. Everything else stays private, even if a request for it
   comes from Roraima.
 - **Each action uses the service of its own domain.** A lock is unlocked with `lock.unlock`, a cover is
-  opened with `cover.open_cover`. Scenes, scripts and automations are never shared, and Roraima cannot
-  call arbitrary services, target other entities or restart Home Assistant. Parameters outside their
-  limits are refused, not adjusted.
+  opened with `cover.open_cover`. Scenes, scripts and automations are never shared. Roraima cannot call
+  arbitrary services or restart Home Assistant, and each command reaches only the shared entity it
+  names. Groups are never offered, because they control all their members. An entity made from a
+  template runs its own actions and can control other devices, so share one only if Roraima may use
+  everything it controls. Parameters outside their limits are refused, not adjusted.
 - **An action counts as done only when the device gets there.** After the service call the integration
   waits for the expected state (a lock reports `unlocked`, a switch `on`) and tells Roraima the state
   it really reached. Roraima also receives the state changes of the shared entities, grouped at most
   once a second, and of no other entity.
 - **Service entries are not offered.** Entries such as Backup, Sun or weather services are not devices
-  you can rent out, so they never appear in the choice.
+  you can rent out, so they never appear in the choice. Service entities of a shared device, such as
+  a restart or factory reset button, are sent only as readings: Roraima can never press them.
 
 Shared domains: `switch`, `light`, `lock`, `cover`, `fan`, `climate`, `valve`, `button`,
 `input_boolean`, and `sensor` and `binary_sensor` as read-only.

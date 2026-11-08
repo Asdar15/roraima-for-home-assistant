@@ -18,7 +18,7 @@
           "devices": "Urządzenia"
         },
         "data_description": {
-          "devices": "Lista zawiera urządzenia z przełącznikami, światłami, zamkami, roletami, wentylatorami, klimatyzatorami, zaworami, przyciskami lub czujnikami oraz encje, które nie należą do żadnego urządzenia. Możesz wybrać najwyżej 256."
+          "devices": "Lista zawiera urządzenia z przełącznikami, światłami, zamkami, roletami, wentylatorami, klimatyzatorami, zaworami, przyciskami lub czujnikami oraz encje, które nie należą do żadnego urządzenia. Grupy się nie pojawiają, ponieważ sterują także urządzeniami, których nie wybrano. Encja utworzona z szablonu (template) wykonuje własne akcje i może sterować innymi urządzeniami, więc wybierz ją tylko wtedy, gdy Roraima może korzystać ze wszystkiego, czym ona steruje. Możesz wybrać najwyżej 256."
         }
       },
       "reauth_confirm": {
@@ -56,7 +56,7 @@
           "devices": "Urządzenia"
         },
         "data_description": {
-          "devices": "Lista zawiera urządzenia z przełącznikami, światłami, zamkami, roletami, wentylatorami, klimatyzatorami, zaworami, przyciskami lub czujnikami oraz encje, które nie należą do żadnego urządzenia. Możesz wybrać najwyżej 256."
+          "devices": "Lista zawiera urządzenia z przełącznikami, światłami, zamkami, roletami, wentylatorami, klimatyzatorami, zaworami, przyciskami lub czujnikami oraz encje, które nie należą do żadnego urządzenia. Grupy się nie pojawiają, ponieważ sterują także urządzeniami, których nie wybrano. Encja utworzona z szablonu (template) wykonuje własne akcje i może sterować innymi urządzeniami, więc wybierz ją tylko wtedy, gdy Roraima może korzystać ze wszystkiego, czym ona steruje. Możesz wybrać najwyżej 256."
         }
       }
     },

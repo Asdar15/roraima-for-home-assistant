@@ -27,13 +27,21 @@ class Row:
     parts: dict[str, er.RegistryEntry]
 
 
-def _shareable(entry: er.RegistryEntry) -> bool:
-    return (
-        entry.domain in ALLOWED_DOMAINS
-        and entry.platform != DOMAIN
-        and entry.disabled_by is None
-        and bool(entry.unique_id)
-    )
+# A group moves all its members, shared or not; so does any entity that lists them.
+GROUP_PLATFORM = "group"
+ATTR_MEMBERS = "entity_id"
+
+
+def _shareable(hass: HomeAssistant, entry: er.RegistryEntry) -> bool:
+    if (
+        entry.domain not in ALLOWED_DOMAINS
+        or entry.platform in (DOMAIN, GROUP_PLATFORM)
+        or entry.disabled_by is not None
+        or not entry.unique_id
+    ):
+        return False
+    state = hass.states.get(entry.entity_id)
+    return state is None or not isinstance(state.attributes.get(ATTR_MEMBERS), (list, tuple))
 
 
 def _parts(entries: list[er.RegistryEntry]) -> dict[str, er.RegistryEntry]:
@@ -61,7 +69,7 @@ def shareable_rows(hass: HomeAssistant) -> dict[str, Row]:
     by_device: dict[str, list[er.RegistryEntry]] = defaultdict(list)
     loose: list[er.RegistryEntry] = []
     for entry in ent_reg.entities.values():
-        if not _shareable(entry):
+        if not _shareable(hass, entry):
             continue
         if entry.device_id is None:
             loose.append(entry)

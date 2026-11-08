@@ -15,7 +15,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry, async_
 
 from custom_components.roraima import commands
 from custom_components.roraima.const import DOMAIN
-from custom_components.roraima.ids import part_key
+from custom_components.roraima.ids import entity_row_id, part_key
 from custom_components.roraima.selection import shareable_rows
 
 from .conftest import FakeServer, FakeSocket, wait_until
@@ -332,4 +332,20 @@ async def test_panel_page_in_repairs(hass: HomeAssistant, server: FakeServer) ->
     await wait_until(lambda: ir.async_get(hass).async_get_issue(DOMAIN, "code_revoked") is not None)
     issue = ir.async_get(hass).async_get_issue(DOMAIN, "code_revoked")
     assert issue.translation_placeholders == {"panel_url": PANEL_PAGE}
+    await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_group_ticked_before_is_not_commandable(hass: HomeAssistant, server: FakeServer) -> None:
+    """A group that was ticked is no longer announced, and a command on it reaches no member."""
+    registry = er.async_get(hass)
+    registry.async_get_or_create("lock", "group", "all_doors", suggested_object_id="all_doors")
+    hass.states.async_set("lock.all_doors", "locked", {"entity_id": ["lock.front", "lock.back"]})
+    unlock = async_mock_service(hass, "lock", "unlock")
+    row = entity_row_id("lock", "group", "all_doors")
+    entry, socket = await _ready(hass, server, [row])
+    assert socket.of_type("announce") == [] and socket.of_type("announce_done")[0]["devices"] == []
+    resp = await _command(
+        socket, device=row, part=part_key("lock", "group", "all_doors"), action="unlock"
+    )
+    assert resp["error"] == "not_shared" and unlock == []
     await hass.config_entries.async_unload(entry.entry_id)
