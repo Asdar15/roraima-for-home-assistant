@@ -76,6 +76,19 @@
       },
       "shared_devices": {
         "name": "Udostępnione urządzenia"
+      },
+      "product_status": {
+        "name": "Stan",
+        "state": {
+          "free": "Wolne",
+          "in_use": "W użyciu"
+        }
+      },
+      "product_free_at": {
+        "name": "Wolne od"
+      },
+      "product_last_sale": {
+        "name": "Ostatnia sprzedaż"
       }
     }
   },
@@ -87,6 +100,13 @@
     "instance_conflict": {
       "title": "Aktywne jest inne połączenie z platformą Roraima",
       "description": "Roraima odrzuciła połączenie, ponieważ kod parowania należy do innego Home Assistant albo ten Home Assistant jest już połączony innym kodem. Przez to połączenie nie można sterować udostępnionymi urządzeniami. Odwołaj stare połączenie w panelu Roraima ({panel_url}), utwórz nowe i wpisz nowy kod w integracji."
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "purchase": "Opłacony zakup",
+      "start": "Początek użycia",
+      "end": "Koniec użycia"
     }
   }
 }

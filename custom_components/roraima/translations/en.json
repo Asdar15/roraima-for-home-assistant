@@ -76,6 +76,19 @@
       },
       "shared_devices": {
         "name": "Shared devices"
+      },
+      "product_status": {
+        "name": "Status",
+        "state": {
+          "free": "Free",
+          "in_use": "In use"
+        }
+      },
+      "product_free_at": {
+        "name": "Free at"
+      },
+      "product_last_sale": {
+        "name": "Last sale"
       }
     }
   },
@@ -87,6 +100,13 @@
     "instance_conflict": {
       "title": "Another connection to Roraima is active",
       "description": "Roraima refused the connection because its pairing code belongs to another Home Assistant, or because this Home Assistant is already connected with another code. The shared devices cannot be controlled through this connection. Revoke the old connection in your Roraima panel ({panel_url}), create a new one and enter the new code in the integration."
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "purchase": "Paid purchase",
+      "start": "Use started",
+      "end": "Use ended"
     }
   }
 }

@@ -48,6 +48,51 @@ Shared domains: `switch`, `light`, `lock`, `cover`, `fan`, `climate`, `valve`, `
 3. Choose the devices to share. You can change the selection at any time from the integration
    options.
 
+## Your Roraima products in Home Assistant
+
+Roraima tells Home Assistant how your time-based and token-based products are doing, for the
+products that use at least one device of this connection. Each product appears as a device with
+three sensors:
+
+- **Status**: *Free* or *In use*.
+- **Free at**: when the current use is expected to end; empty while the product is free.
+- **Last sale**: when the product was last sold.
+
+The sensors are unavailable while the connection to Roraima is closed. When the connection opens
+again, Roraima sends the current list of products: a product that is no longer part of the
+connection is removed from Home Assistant.
+
+At every paid purchase, start and end of a use, Roraima sends a notice, which becomes the Home
+Assistant event `roraima_event`. In the automation editor you can pick it as a device trigger of the
+product (*Paid purchase*, *Use started*, *Use ended*), or listen to the event in YAML:
+
+```yaml
+automation:
+  - alias: "Laundry light on when the washing machine is rented"
+    triggers:
+      - trigger: event
+        event_type: roraima_event
+        event_data:
+          type: start
+          product_id: 381
+    actions:
+      - action: light.turn_on
+        target:
+          entity_id: light.laundry
+```
+
+The event data holds `device_id`, `type` (`purchase`, `start` or `end`), `product_id`,
+`product_name`, `kind` (`time` or `tokens`), `at`, `duration_minutes`, `tokens`, `program` and
+`ends_at` (times in UTC). It never holds data about the buyer: no name, email, phone number, order
+or access code.
+
+**Do not use these notices to open doors or locks.** A notice is lost while the connection is
+closed, and it does not prove who is at the door. Doors and locks that Roraima must open belong in
+the access scenarios of the product, which Roraima runs on the shared devices.
+
+These notices only go from Roraima to Home Assistant: the integration never sends commands, sales or
+changes to Roraima.
+
 ## Removing the integration
 
 Removing the integration from Home Assistant tells Roraima to revoke the pairing code. You can also

@@ -76,6 +76,19 @@
       },
       "shared_devices": {
         "name": "Dispositivi condivisi"
+      },
+      "product_status": {
+        "name": "Stato",
+        "state": {
+          "free": "Libero",
+          "in_use": "In uso"
+        }
+      },
+      "product_free_at": {
+        "name": "Si libera alle"
+      },
+      "product_last_sale": {
+        "name": "Ultima vendita"
       }
     }
   },
@@ -87,6 +100,13 @@
     "instance_conflict": {
       "title": "Un altro collegamento a Roraima è attivo",
       "description": "Roraima ha rifiutato il collegamento perché il codice di abbinamento appartiene a un altro Home Assistant, oppure perché questo Home Assistant è già collegato con un altro codice. Da questo collegamento i dispositivi condivisi non si possono comandare. Revoca il vecchio collegamento nel tuo pannello di Roraima ({panel_url}), creane uno nuovo e inserisci il nuovo codice nell'integrazione."
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "purchase": "Acquisto pagato",
+      "start": "Inizio dell'uso",
+      "end": "Fine dell'uso"
     }
   }
 }

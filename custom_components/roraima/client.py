@@ -47,6 +47,7 @@ from .const import (
     tunnel_url,
 )
 from .link import LinkError, Outcome, async_open, outcome_for_close
+from .products import ProductHub
 from .selection import shareable_rows
 from .states import StateRelay
 
@@ -94,6 +95,7 @@ class RoraimaClient:
         self._commands: set[asyncio.Task] = set()
         self.command_results: Counter[str] = Counter()
         self._relay = StateRelay(hass, self._send, self._spawn)
+        self.products = ProductHub(hass, entry)
         self._resync = Debouncer(
             hass, _LOGGER, cooldown=5, immediate=False, function=self._async_resync
         )
@@ -253,6 +255,10 @@ class RoraimaClient:
                 await self._async_cmd(data)
             elif kind == "notice":
                 self._on_notice(data)
+            elif kind == "roraima_state":
+                self.products.async_on_state(data)
+            elif kind == "roraima_event":
+                self.products.async_on_event(data)
             else:
                 _LOGGER.debug("Ignoring message of type %s", kind)
         except (ClientError, ConnectionError) as err:
@@ -399,4 +405,5 @@ class RoraimaClient:
             "followed_parts": self._relay.followed,
             "commands": dict(self.command_results),
             "notices": list(self.notices),
+            "products": self.products.diagnostics(),
         }

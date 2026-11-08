@@ -76,6 +76,19 @@
       },
       "shared_devices": {
         "name": "Dispositivos compartidos"
+      },
+      "product_status": {
+        "name": "Estado",
+        "state": {
+          "free": "Libre",
+          "in_use": "En uso"
+        }
+      },
+      "product_free_at": {
+        "name": "Libre a las"
+      },
+      "product_last_sale": {
+        "name": "Última venta"
       }
     }
   },
@@ -87,6 +100,13 @@
     "instance_conflict": {
       "title": "Hay otra conexión con Roraima activa",
       "description": "Roraima ha rechazado la conexión porque el código de emparejamiento pertenece a otro Home Assistant o porque este Home Assistant ya está conectado con otro código. Desde esta conexión no se pueden controlar los dispositivos compartidos. Revoca la conexión anterior en tu panel de Roraima ({panel_url}), crea una nueva e introduce el nuevo código en la integración."
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "purchase": "Compra pagada",
+      "start": "Inicio del uso",
+      "end": "Fin del uso"
     }
   }
 }

@@ -17,6 +17,7 @@ from .client import (
     update_signal,
 )
 from .const import DOMAIN, PANEL_URL
+from .product_sensor import async_setup_product_sensors
 
 
 async def async_setup_entry(
@@ -27,6 +28,7 @@ async def async_setup_entry(
     """Add the two sensors of the Roraima device."""
     client = entry.runtime_data
     async_add_entities([ConnectionSensor(client), SharedDevicesSensor(client)])
+    async_setup_product_sensors(hass, client, async_add_entities)
 
 
 class RoraimaSensor(SensorEntity):

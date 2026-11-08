@@ -76,6 +76,19 @@
       },
       "shared_devices": {
         "name": "Dispositivos partilhados"
+      },
+      "product_status": {
+        "name": "Estado",
+        "state": {
+          "free": "Livre",
+          "in_use": "Em utilização"
+        }
+      },
+      "product_free_at": {
+        "name": "Livre às"
+      },
+      "product_last_sale": {
+        "name": "Última venda"
       }
     }
   },
@@ -87,6 +100,13 @@
     "instance_conflict": {
       "title": "Está ativa outra ligação à Roraima",
       "description": "A Roraima recusou a ligação porque o código de emparelhamento pertence a outro Home Assistant ou porque este Home Assistant já está ligado com outro código. Através desta ligação não é possível comandar os dispositivos partilhados. Revoga a ligação antiga no teu painel da Roraima ({panel_url}), cria uma nova e introduz o novo código na integração."
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "purchase": "Compra paga",
+      "start": "Início da utilização",
+      "end": "Fim da utilização"
     }
   }
 }
