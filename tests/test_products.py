@@ -2,7 +2,7 @@
 
 import json
 
-from homeassistant.core import Event, HomeAssistant
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -44,7 +44,7 @@ async def test_no_buyer_data_in_events_or_sensors(hass: HomeAssistant, server: F
     socket = server.sockets[0]
     await wait_until(lambda: socket.of_type("announce_done"))
     events: list[Event] = []
-    hass.bus.async_listen("roraima_event", events.append)
+    hass.bus.async_listen("roraima_event", callback(lambda event: events.append(event)))
 
     socket.push({"v": 1, "type": "roraima_state", "complete": True, "products": [
         {"product_id": 381, "name": "Washer", "kind": "time", "state": "free",
@@ -93,7 +93,7 @@ async def test_caps_on_products_and_notices(hass: HomeAssistant, server: FakeSer
     socket = server.sockets[0]
     await wait_until(lambda: socket.of_type("announce_done"))
     events: list[Event] = []
-    hass.bus.async_listen("roraima_event", events.append)
+    hass.bus.async_listen("roraima_event", callback(lambda event: events.append(event)))
 
     for batch in range(3):
         socket.push({"v": 1, "type": "roraima_state", "complete": False, "products": [
