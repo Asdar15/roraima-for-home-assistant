@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import logging
 import re
+import time
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -32,6 +33,10 @@ EVENT_TYPES = ("purchase", "start", "end")
 KINDS = ("time", "tokens")
 PRODUCT_STATES = ("free", "in_use")
 MAX_PRODUCTS = 100
+# A flood of notices from a compromised server must not run the seller's automations
+# without pause: one notice per product and type each second, ten per second in all.
+EVENT_GAP = 1.0
+EVENTS_PER_SECOND = 10.0
 MAX_NAME = 255
 
 _CONTROL = re.compile(r"[\x00-\x1f\x7f-\x9f]")
@@ -105,7 +110,11 @@ class ProductHub:
         self.entry = entry
         self.products: dict[int, Product] = {}
         self.events_fired = 0
+        self.events_dropped = 0
         self.ignored = 0
+        self._last_event: dict[tuple[int, str], float] = {}
+        self._tokens = EVENTS_PER_SECOND
+        self._refilled = time.monotonic()
         for device in dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id):
             product_id = self._own_product(device)
             if product_id is not None:
@@ -135,16 +144,18 @@ class ProductHub:
             self.ignored += 1
             return
         complete = data.get("complete") is True
-        seen: set[int] = set()
+        parsed: list[Product] = []
         for item in items[:MAX_PRODUCTS]:
             product = self._parse_state(item)
             if product is None:
                 self.ignored += 1
                 continue
-            seen.add(product.product_id)
-            self._store(product)
+            parsed.append(product)
         if complete:
-            self._remove_missing(seen)
+            # The full list replaces the old one, so it always fits under the cap.
+            self._remove_missing({product.product_id for product in parsed})
+        for product in parsed:
+            self._store(product)
 
     def _parse_state(self, item: Any) -> Product | None:
         if not isinstance(item, dict):
@@ -164,8 +175,16 @@ class ProductHub:
         )
 
     @callback
-    def _store(self, product: Product) -> None:
+    def _store(self, product: Product) -> bool:
         old = self.products.get(product.product_id)
+        if old is None and len(self.products) >= MAX_PRODUCTS:
+            self.ignored += 1
+            _LOGGER.debug(
+                "Roraima sent product %s beyond the %s products kept; left out until the next full list",
+                product.product_id,
+                MAX_PRODUCTS,
+            )
+            return False
         is_new = old is None or self.device_id(product.product_id) is None
         if old is not None and not product.known:
             # A notice names the product but does not say its state: keep what we know.
@@ -181,6 +200,7 @@ class ProductHub:
         async_dispatcher_send(
             self.hass, product_signal(self.entry.entry_id, product.product_id)
         )
+        return True
 
     @callback
     def _ensure_device(self, product: Product) -> None:
@@ -224,9 +244,15 @@ class ProductHub:
             self.ignored += 1
             _LOGGER.debug("Ignoring a Roraima notice without a valid type, product or time")
             return
+        if not self._event_allowed(product_id, event):
+            self.events_dropped += 1
+            _LOGGER.debug("Dropping a Roraima notice %s for product %s: too many", event, product_id)
+            return
         name = _name(product.get("name"), str(product_id))
         kind = _choice(data.get("kind"), KINDS)
-        self._store(Product(product_id, name, kind))
+        if not self._store(Product(product_id, name, kind)):
+            self.events_dropped += 1
+            return
         program = data.get("program")
         program_name = (
             _name(program.get("name"), "") or None if isinstance(program, dict) else None
@@ -247,10 +273,24 @@ class ProductHub:
         self.events_fired += 1
         self.hass.bus.async_fire(EVENT_RORAIMA, payload)
 
+    def _event_allowed(self, product_id: int, event: str) -> bool:
+        now = time.monotonic()
+        self._tokens = min(EVENTS_PER_SECOND, self._tokens + (now - self._refilled) * EVENTS_PER_SECOND)
+        self._refilled = now
+        last = self._last_event.get((product_id, event))
+        if self._tokens < 1 or (last is not None and now - last < EVENT_GAP):
+            return False
+        self._tokens -= 1
+        self._last_event[(product_id, event)] = now
+        if len(self._last_event) > MAX_PRODUCTS * len(EVENT_TYPES) * 2:
+            self._last_event = {k: v for k, v in self._last_event.items() if now - v < EVENT_GAP}
+        return True
+
     def diagnostics(self) -> dict[str, Any]:
         """Counts only: product names are the seller's, not needed for support."""
         return {
             "products": len(self.products),
             "events_fired": self.events_fired,
+            "events_dropped": self.events_dropped,
             "ignored": self.ignored,
         }

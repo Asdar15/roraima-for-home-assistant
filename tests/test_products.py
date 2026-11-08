@@ -85,3 +85,39 @@ async def test_no_buyer_data_in_events_or_sensors(hass: HomeAssistant, server: F
         if d.name in ("Washer", "Light")
     ]
     assert [d.name for d in products] == ["Washer"]
+
+
+async def test_caps_on_products_and_notices(hass: HomeAssistant, server: FakeServer) -> None:
+    """A flooding server gets at most 100 products and one notice per product and type each second."""
+    entry = await _setup(hass)
+    socket = server.sockets[0]
+    await wait_until(lambda: socket.of_type("announce_done"))
+    events: list[Event] = []
+    hass.bus.async_listen("roraima_event", events.append)
+
+    for batch in range(3):
+        socket.push({"v": 1, "type": "roraima_state", "complete": False, "products": [
+            {"product_id": 1000 + batch * 100 + n, "name": f"P{batch}-{n}", "kind": "time",
+             "state": "free", "busy_until": None, "last_sale_at": None}
+            for n in range(100)
+        ]})
+    hub = entry.runtime_data.products
+    await wait_until(lambda: hub.ignored >= 200)
+    await hass.async_block_till_done()
+    devices = [
+        d for d in dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+        if d.name and d.name.startswith("P")
+    ]
+    assert len(devices) == 100 and len(hub.products) == 100
+
+    notice = {"v": 1, "type": "roraima_event", "id": "3f9c0a1b2c3d4e5f", "at": "2026-11-07T17:10:03Z",
+              "product": {"product_id": 1000, "name": "P0-0"}, "kind": "time",
+              "duration_minutes": 30, "tokens": None, "program": None, "ends_at": "2026-11-07T17:40:03Z"}
+    for _ in range(50):
+        socket.push({**notice, "event": "start"})
+    socket.push({**notice, "event": "end"})
+    socket.push({**notice, "event": "start", "product": {"product_id": 1500, "name": "Beyond"}})
+    await wait_until(lambda: hub.events_dropped >= 50)
+    await hass.async_block_till_done()
+    assert [e.data["type"] for e in events] == ["start", "end"]
+    assert 1500 not in hub.products
