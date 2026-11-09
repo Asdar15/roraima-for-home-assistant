@@ -20,7 +20,9 @@ def _service(*filters: dict[str, Any], **fields: Any) -> dict[str, Any]:
 
 DESCRIPTIONS: dict[str, dict[str, Any]] = {
     "lock": {
-        "unlock": _service({"domain": ["lock"]}, code={"selector": {"text": {}}}),
+        "unlock": _service(
+            {"domain": ["lock"]}, code={"selector": {"text": {}}}, mode={"selector": {"state": {}}}
+        ),
         "open": _service({"domain": ["lock"], "supported_features": [1]}),
         "aim": _service(
             {"domain": ["lock"]},
@@ -74,7 +76,7 @@ async def test_no_field_names_another_target(hass: HomeAssistant) -> None:
     of the host or a list; a section's fields are fields of the service."""
     actions = part_actions(DESCRIPTIONS, _lock(hass), State("lock.porta", "locked"))
     assert list(actions["aim"]) == ["level"]
-    assert actions["unlock"]["code"].kind == "text"
+    assert actions["unlock"]["code"].kind == "text" and actions["unlock"]["mode"].kind == "text"
 
 
 async def test_service_part_has_no_action(hass: HomeAssistant) -> None:
@@ -101,3 +103,35 @@ async def test_parameters_are_announced_fields_only(hass: HomeAssistant, params:
     fields = part_actions(DESCRIPTIONS, _lock(hass), State("lock.porta", "locked"))["aim"]
     assert check_params(fields, params) is None
     assert check_params(fields, {"level": 3}) == {"level": 3}
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "http://192.168.1.1/admin",
+        "rtsp://camera.local/stream",
+        "media-source://media_source/local/x.mp3",
+        "media-source:x",
+        "file:/etc/passwd",
+        "FILE:/etc/passwd",
+        " file:/config/secrets.yaml",
+        "mailto:host@example.org",
+        "/config/secrets.yaml",
+        " /media/x.mp3",
+        "\\\\nas\\share",
+        "\\x",
+        "C:\\Windows",
+    ],
+)
+async def test_text_never_names_an_address_or_a_path(hass: HomeAssistant, value: str) -> None:
+    """A text field, or a state field carried as text, never opens an address or a path."""
+    fields = part_actions(DESCRIPTIONS, _lock(hass), State("lock.porta", "locked"))["unlock"]
+    for key in ("code", "mode"):
+        assert check_params(fields, {key: value}) is None, key
+
+
+async def test_words_and_times_are_not_addresses(hass: HomeAssistant) -> None:
+    """A colon followed by a space, a time or a plain word is an ordinary text."""
+    fields = part_actions(DESCRIPTIONS, _lock(hass), State("lock.porta", "locked"))["unlock"]
+    for value in ("Ciao: arrivo", "08:30", "1234", "heat_cool", "Eco 40-60"):
+        assert check_params(fields, {"code": value, "mode": value}) == {"code": value, "mode": value}

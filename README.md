@@ -20,7 +20,9 @@ the devices you choose can be used in the rentals and services you sell on Rorai
   its own services. A command carries only the fields Home Assistant describes for that service, each
   checked: a number within its limits, yes or no, one of the listed choices, or a short text. A field
   that points at another entity, device, area or target is never accepted, and each command reaches
-  only the shared entity it names. Roraima cannot call any other service or restart Home Assistant.
+  only the shared entity it names. A text that names a web address, a path or a scheme such as
+  `file:` or `media-source:` is refused, so Roraima cannot make Home Assistant open addresses of
+  your home network or files. Roraima cannot call any other service or restart Home Assistant.
   Parameters outside their limits are refused, not adjusted.
 - **Scenes, scripts, automations and groups are never shared.** They run actions on other entities, so
   they could control devices you have not chosen; the same holds for any entity that lists other

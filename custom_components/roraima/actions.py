@@ -41,6 +41,21 @@ _CONTROL = re.compile(r"[\x00-\x1f\x7f-\x9f]")
 _UNSAFE_UNIT = re.compile(r"[<>\"'&\x00-\x1f\x7f-\x9f]")
 # Selectors whose value is one plain text: a state of the entity itself, a time of day.
 _TEXT_SELECTORS = frozenset({"text", "state", "time"})
+# A text that names an address or a path would make Home Assistant open something of the home
+# network or of the host (play_media, media-source:, file:): a compromised server must not. Words
+# with a space after a colon ("Ciao: arrivo") and times ("08:30") are not addresses.
+_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.\-]*:")
+
+
+def names_address(text: str) -> bool:
+    """Whether a text names an address or a path: `://`, a leading slash or backslash, or a
+    scheme (`file:`, `media-source:`) in a text without spaces."""
+    text = text.strip()
+    return (
+        "://" in text
+        or text.startswith(("/", "\\"))
+        or (" " not in text and _SCHEME.match(text) is not None)
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,7 +85,9 @@ class Field:
             return isinstance(value, bool)
         if not isinstance(value, str) or len(value) > TEXT_MAX or _CONTROL.search(value):
             return False
-        return self.kind == TEXT or value in (self.options or ())
+        if self.kind == TEXT:
+            return not names_address(value)
+        return value in (self.options or ())
 
 
 type Actions = dict[str, dict[str, Field]]
