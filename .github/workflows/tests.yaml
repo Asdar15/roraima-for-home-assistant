@@ -27,5 +27,13 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install test dependencies
         run: pip install "pytest-homeassistant-custom-component==${{ matrix.phcc }}"
+      # Home Assistant reads its service descriptions only with the requirements a real
+      # installation has; the test harness lacks them (see the script).
+      - name: Install what Home Assistant needs to read service descriptions
+        run: |
+          python .github/scripts/base_requirements.py > base-requirements.txt
+          cat base-requirements.txt
+          constraints="$(python -c 'import homeassistant, pathlib; print(pathlib.Path(homeassistant.__file__).parent / "package_constraints.txt")')"
+          pip install -r base-requirements.txt -c "$constraints"
       - name: Run tests
         run: python -m pytest
