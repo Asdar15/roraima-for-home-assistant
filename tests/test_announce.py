@@ -36,12 +36,19 @@ def test_only_simple_attributes_travel() -> None:
             "not_a_number": float("nan"),
             "media_position_updated_at": object(),
             "media_duration": None,
+            "latitude": 45.07,
+            "longitude": 7.68,
+            "gps_accuracy": 12,
+            "altitude": 240,
             "volume_level": 0.4,
             "is_volume_muted": False,
             "media_title": "News",
         },
     )
     assert attribute_keys(state) == ["is_volume_muted", "media_title", "volume_level"]
+    # A position never travels, even if it was announced by mistake.
+    assert attribute_keys(state, kept=["latitude"]) == ["is_volume_muted", "media_title", "volume_level"]
+    assert attribute_texts(state, ["latitude", "longitude", "gps_accuracy", "altitude"]) == {}
     assert attribute_texts(state, ["is_volume_muted", "volume_level"]) == {
         "is_volume_muted": "false",
         "volume_level": "0.4",

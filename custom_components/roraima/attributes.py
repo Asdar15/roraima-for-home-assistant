@@ -2,8 +2,9 @@
 
 An attribute travels when its value is a number, a text or yes/no. The ones that describe the entity
 instead of measuring it (its name, icon, picture, unit, class, features) stay home, and so does any
-list or table. Names that can hold a secret, and values that hold an address or a path, never leave
-either.
+list or table. Names that can hold a secret, values that hold an address or a path, and where a
+person, a phone or a tracker is (latitude, longitude, GPS accuracy, altitude) never leave either:
+the state of a person or a tracker does.
 """
 
 from __future__ import annotations
@@ -35,6 +36,8 @@ DESCRIPTIVE = frozenset(
 )
 # A camera keeps the key to its own pictures in `access_token`; any such name stays home.
 _SECRET = re.compile(r"token|secret|passw|api_?key|credential|cookie|auth")
+# A position is personal data: it never leaves, in an announce or in a state.
+_LOCATION = re.compile(r"^(latitude|longitude|gps_accuracy|altitude)$")
 # An address or a path can carry a key in it (a picture or a stream with ?token=...), and a path
 # shows the files of the host: neither leaves.
 _ADDRESS = re.compile(r"://|^/|[?&][a-z_]*token=", re.IGNORECASE)
@@ -63,6 +66,7 @@ def shareable(name: Any) -> bool:
         and ATTRIBUTE_FORM.fullmatch(name) is not None
         and name not in DESCRIPTIVE
         and _SECRET.search(name) is None
+        and _LOCATION.fullmatch(name) is None
     )
 
 
@@ -85,6 +89,7 @@ def attribute_keys(state: State | None, kept: Collection[str] = ()) -> list[str]
 
 def attribute_texts(state: State | None, keys: Iterable[str]) -> dict[str, str]:
     """The current value of each announced attribute; unknown when it has none."""
+    keys = [key for key in keys if shareable(key)]
     if state is None or state.state == STATE_UNAVAILABLE:
         return dict.fromkeys(keys, STATE_UNAVAILABLE)
     texts: dict[str, str] = {}

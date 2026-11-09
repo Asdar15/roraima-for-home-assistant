@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import timedelta
+import json
 import math
 from typing import Any
 
@@ -400,6 +401,31 @@ async def test_attribute_changes_are_sent(hass: HomeAssistant, server: FakeServe
     attributes = socket.of_type("announce")[1]["device"]["parts"][0]["attributes"]
     assert set(attributes) == {"current_temperature", "hvac_action", "preset_mode", "temperature"}
     assert attributes["hvac_action"]["state"] == "unknown"
+    await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_position_never_leaves(hass: HomeAssistant, server: FakeServer) -> None:
+    """A shared tracker sends its state and its other values; where it is never leaves home."""
+    er.async_get(hass).async_get_or_create(
+        "device_tracker", "demo", "bici-1", suggested_object_id="bici", original_name="Bici"
+    )
+    where = {"latitude": 45.0703, "longitude": 7.6869, "gps_accuracy": 12, "altitude": 240}
+    others = {"battery_level": 80, "source_type": "gps", "friendly_name": "Bici"}
+    hass.states.async_set("device_tracker.bici", "home", {**others, **where})
+    row = entity_row_id("device_tracker", "demo", "bici-1")
+    key = part_key("device_tracker", "demo", "bici-1")
+    entry, socket = await _ready(hass, server, [row])
+    part = _parts(socket)[key]
+    assert part["state"] == "home"
+    assert set(part["attributes"]) == {"battery_level", "source_type"}
+    hass.states.async_set("device_tracker.bici", "home", {**others, **where, "latitude": 45.1})
+    hass.states.async_set(
+        "device_tracker.bici", "not_home", {**others, "latitude": 45.2, "longitude": 7.7, "altitude": 300}
+    )
+    await wait_until(lambda: socket.of_type("state"))
+    assert socket.of_type("state")[0]["devices"] == {row: {key: "not_home"}}
+    sent = json.dumps(socket.sent)
+    assert not any(name in sent for name in where) and "45.0703" not in sent and "45.2" not in sent
     await hass.config_entries.async_unload(entry.entry_id)
 
 

@@ -35,8 +35,11 @@ the devices you choose can be used in the rentals and services you sell on Rorai
   a restart or factory reset button, are sent only as readings: Roraima can never press them.
 - **Attributes stay simple.** Only numbers, texts and yes/no values travel, up to 16 per entity. The
   attributes that describe the entity (name, icon, picture, unit, class, supported features), lists,
-  values that hold a web address and attributes whose name suggests a secret, such as a token, are
-  never sent.
+  values that hold a web address or a path and attributes whose name suggests a secret, such as a
+  token, are never sent.
+- **Positions stay home.** Latitude, longitude, GPS accuracy and altitude are never sent, whatever
+  entity holds them. If you share a person or a tracker, Roraima receives only its state, such as
+  home or away.
 
 Names of actions, fields and attributes are sent in the language of your Home Assistant.
 
