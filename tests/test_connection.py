@@ -1,11 +1,13 @@
 """The running connection: revocation, what is announced, and no command before the choice."""
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_mock_service
 
 from custom_components.roraima.const import CONF_CODE, CONF_DEVICES, CONF_INSTANCE_ID, DOMAIN
+from custom_components.roraima.ids import part_key
 from custom_components.roraima.selection import shareable_rows
 
 from .conftest import CODE, FakeServer, wait_until
@@ -177,3 +179,30 @@ async def test_people_trackers_and_zones_are_never_offered(hass: HomeAssistant) 
         registry.async_get_or_create(domain, platform, unique_id, original_name=unique_id)
     labels = [row.label for row in shareable_rows(hass).values()]
     assert labels == ["Lavatrice di prova HAI", "Luce lavanderia di prova HAI"]
+
+
+# The Home Assistant app gives its sensors a unique id made of the 64 hexadecimals of its webhook.
+WEBHOOK = "8f3c2a1b" * 8
+
+
+async def test_a_place_is_read_on_the_full_names_not_on_the_short_key(hass: HomeAssistant) -> None:
+    """The part key of a phone sensor loses the end of its unique id, so the place is read on the
+    unique id, the object id, the translation key and the original name in full."""
+    geocoded = f"{WEBHOOK}_geocoded_location"
+    assert "geocoded" not in part_key("sensor", "mobile_app", geocoded)
+    owner = MockConfigEntry(domain="mobile_app")
+    owner.add_to_hass(hass)
+    phone = dr.async_get(hass).async_get_or_create(
+        config_entry_id=owner.entry_id, identifiers={("mobile_app", "telefono")}, name="Telefono"
+    )
+    registry = er.async_get(hass)
+    for unique_id, extra in (
+        (geocoded, {"original_name": "Posizione", "suggested_object_id": "telefono_posizione"}),
+        (f"{WEBHOOK}_s1", {"suggested_object_id": "telefono_gps"}),
+        (f"{WEBHOOK}_s2", {"translation_key": "last_known_address", "suggested_object_id": "telefono_s2"}),
+        (f"{WEBHOOK}_s3", {"original_name": "Last Location", "suggested_object_id": "telefono_s3"}),
+        (f"{WEBHOOK}_battery_level", {"original_name": "Battery level", "suggested_object_id": "telefono_b"}),
+    ):
+        registry.async_get_or_create("sensor", "mobile_app", unique_id, device_id=phone.id, **extra)
+    [row] = shareable_rows(hass).values()
+    assert list(row.parts) == [part_key("sensor", "mobile_app", f"{WEBHOOK}_battery_level")]

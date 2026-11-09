@@ -40,11 +40,12 @@ the devices you choose can be used in the rentals and services you sell on Rorai
   attributes that describe the entity (name, icon, picture, unit, class, supported features), lists,
   values that hold a web address or a path and attributes whose name suggests a secret, such as a
   token, are never sent.
-- **Places stay home.** People, trackers and zones are never offered, nor an entity whose key tells
-  a place, such as the geocoded location of a phone, whose state is a street address. An attribute
-  whose name tells a place (latitude, longitude, GPS, location, address, IP address, altitude,
-  heading, postal code, city, street, country and the like) is never sent, whatever entity holds
-  it. The position of a cover is not a place and is sent.
+- **Places stay home.** People, trackers and zones are never offered, nor an entity whose unique id,
+  entity id, translation key or original name tells a place, such as the geocoded location of a
+  phone, whose state is a street address. An attribute whose name tells a place (latitude,
+  longitude, GPS, location, address, IP address, altitude, heading, postal code, city, street,
+  country and the like) is never sent, whatever entity holds it. The position of a cover is not a
+  place and is sent.
 
 Names of actions, fields and attributes are sent in the language of your Home Assistant.
 

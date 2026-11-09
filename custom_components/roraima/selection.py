@@ -35,15 +35,30 @@ class Row:
 GROUP_PLATFORM = "group"
 ATTR_MEMBERS = "entity_id"
 RUNNER_DOMAINS = frozenset({"automation", "scene", "script"})
-# Where people are is personal data: people, trackers and zones are never shared, nor a part whose
-# key tells a place (the geocoded location of a phone has the street address as its state).
+# Where people are is personal data: people, trackers and zones are never shared, nor an entity
+# whose own names tell a place (the geocoded location of a phone has the street address as its
+# state).
 LOCATION_DOMAINS = re.compile(r"^(person|device_tracker|zone)$")
-LOCATION_KEY = re.compile(r"(^|_)(geocoded|location|address|gps|coordinates)(_|$)")
+LOCATION_WORD = re.compile(r"(^|_)(geocoded|location|address|gps|coordinates)(_|$)")
+_NOT_ALNUM = re.compile(r"[^a-z0-9]")
 
 
 def _tells_a_place(entry: er.RegistryEntry) -> bool:
-    code = part_key(entry.domain, entry.platform, str(entry.unique_id)).split(".", 1)[1]
-    return LOCATION_KEY.search(code) is not None
+    """Whether the unique id, object id, translation key or original name tells a place.
+
+    Read in full, never on the part key: a long unique id (a phone's is 64 hexadecimals and then
+    `_geocoded_location`) loses its end when the key is shortened.
+    """
+    names = (
+        entry.unique_id,
+        entry.entity_id.split(".", 1)[-1],
+        entry.translation_key,
+        entry.original_name,
+    )
+    return any(
+        isinstance(name, str) and LOCATION_WORD.search(_NOT_ALNUM.sub("_", name.lower())) is not None
+        for name in names
+    )
 
 
 def _shareable(hass: HomeAssistant, entry: er.RegistryEntry) -> bool:
