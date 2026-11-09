@@ -18,7 +18,7 @@
           "devices": "Dispositivos"
         },
         "data_description": {
-          "devices": "La lista muestra los dispositivos con interruptores, luces, cerraduras, persianas, ventiladores, climatizadores, válvulas, botones o sensores, y las entidades que no pertenecen a ningún dispositivo. Los grupos no aparecen, porque también controlan dispositivos que no has elegido. Una entidad creada a partir de una plantilla (template) ejecuta sus propias acciones y puede controlar otros dispositivos, así que elígela solo si Roraima puede usar todo lo que controla. Puedes elegir hasta 256."
+          "devices": "La lista muestra los dispositivos de Home Assistant y las entidades que no pertenecen a ningún dispositivo. De los que elijas, Roraima recibe sus estados y puede usar las acciones que Home Assistant ofrece para ellos. Los grupos, las escenas, los scripts y las automatizaciones no aparecen, porque también controlan dispositivos que no has elegido. Una entidad creada a partir de una plantilla (template) ejecuta sus propias acciones y puede controlar otros dispositivos, así que elígela solo si Roraima puede usar todo lo que controla. Puedes elegir hasta 256."
         }
       },
       "reauth_confirm": {
@@ -56,7 +56,7 @@
           "devices": "Dispositivos"
         },
         "data_description": {
-          "devices": "La lista muestra los dispositivos con interruptores, luces, cerraduras, persianas, ventiladores, climatizadores, válvulas, botones o sensores, y las entidades que no pertenecen a ningún dispositivo. Los grupos no aparecen, porque también controlan dispositivos que no has elegido. Una entidad creada a partir de una plantilla (template) ejecuta sus propias acciones y puede controlar otros dispositivos, así que elígela solo si Roraima puede usar todo lo que controla. Puedes elegir hasta 256."
+          "devices": "La lista muestra los dispositivos de Home Assistant y las entidades que no pertenecen a ningún dispositivo. De los que elijas, Roraima recibe sus estados y puede usar las acciones que Home Assistant ofrece para ellos. Los grupos, las escenas, los scripts y las automatizaciones no aparecen, porque también controlan dispositivos que no has elegido. Una entidad creada a partir de una plantilla (template) ejecuta sus propias acciones y puede controlar otros dispositivos, así que elígela solo si Roraima puede usar todo lo que controla. Puedes elegir hasta 256."
         }
       }
     },

@@ -12,24 +12,33 @@ the devices you choose can be used in the rentals and services you sell on Rorai
   access token.
 - **You decide what Roraima can see and control.** At first no device is shared. You pick the devices
   in the integration options; Roraima receives only the name, manufacturer, model and the entities of
-  those devices, and can act only on them. Everything else stays private, even if a request for it
-  comes from Roraima.
-- **Each action uses the service of its own domain.** A lock is unlocked with `lock.unlock`, a cover is
-  opened with `cover.open_cover`. Scenes, scripts and automations are never shared. Roraima cannot call
-  arbitrary services or restart Home Assistant, and each command reaches only the shared entity it
-  names. Groups are never offered, because they control all their members. An entity made from a
-  template runs its own actions and can control other devices, so share one only if Roraima may use
-  everything it controls. Parameters outside their limits are refused, not adjusted.
-- **An action counts as done only when the device gets there.** After the service call the integration
-  waits for the expected state (a lock reports `unlocked`, a switch `on`) and tells Roraima the state
-  it really reached. Roraima also receives the state changes of the shared entities, grouped at most
-  once a second, and of no other entity.
+  those devices, with their states and their simple attributes, and can act only on them. Everything
+  else stays private, even if a request for it comes from Roraima.
+- **Roraima uses the actions Home Assistant offers for each entity.** The actions of a shared entity are
+  the services of its own domain that Home Assistant applies to it, as in the automation editor: a lock
+  is unlocked with `lock.unlock`, a cover is opened with `cover.open_cover`, a new kind of device brings
+  its own services. A command carries only the fields Home Assistant describes for that service, each
+  checked: a number within its limits, yes or no, one of the listed choices, or a short text. A field
+  that points at another entity, device, area or target is never accepted, and each command reaches
+  only the shared entity it names. Roraima cannot call any other service or restart Home Assistant.
+  Parameters outside their limits are refused, not adjusted.
+- **Scenes, scripts, automations and groups are never shared.** They run actions on other entities, so
+  they could control devices you have not chosen; the same holds for any entity that lists other
+  entities. An entity made from a template runs its own actions and can control other devices, so
+  share one only if Roraima may use everything it controls.
+- **An action counts as done when Home Assistant completes it.** After the service call the integration
+  tells Roraima the state the entity reached. Roraima also receives the changes of the states and of
+  the announced attributes of the shared entities, grouped at most once a second, and of no other
+  entity.
 - **Service entries are not offered.** Entries such as Backup, Sun or weather services are not devices
   you can rent out, so they never appear in the choice. Service entities of a shared device, such as
   a restart or factory reset button, are sent only as readings: Roraima can never press them.
+- **Attributes stay simple.** Only numbers, texts and yes/no values travel, up to 16 per entity. The
+  attributes that describe the entity (name, icon, picture, unit, class, supported features), lists,
+  values that hold a web address and attributes whose name suggests a secret, such as a token, are
+  never sent.
 
-Shared domains: `switch`, `light`, `lock`, `cover`, `fan`, `climate`, `valve`, `button`,
-`input_boolean`, and `sensor` and `binary_sensor` as read-only.
+Names of actions, fields and attributes are sent in the language of your Home Assistant.
 
 ## Requirements
 

@@ -18,7 +18,7 @@
           "devices": "Appareils"
         },
         "data_description": {
-          "devices": "La liste affiche les appareils dotés d'interrupteurs, de lumières, de serrures, de volets, de ventilateurs, de climatiseurs, de vannes, de boutons ou de capteurs, ainsi que les entités qui n'appartiennent à aucun appareil. Les groupes n'apparaissent pas, car ils commandent aussi des appareils que tu n'as pas choisis. Une entité créée à partir d'un modèle (template) exécute ses propres actions et peut commander d'autres appareils, choisis-la donc seulement si Roraima peut utiliser tout ce qu'elle commande. Tu peux en choisir 256 au maximum."
+          "devices": "La liste affiche les appareils de Home Assistant ainsi que les entités qui n'appartiennent à aucun appareil. Pour ceux que tu choisis, Roraima reçoit leurs états et peut utiliser les actions que Home Assistant propose pour eux. Les groupes, les scènes, les scripts et les automatisations n'apparaissent pas, car ils commandent aussi des appareils que tu n'as pas choisis. Une entité créée à partir d'un modèle (template) exécute ses propres actions et peut commander d'autres appareils, choisis-la donc seulement si Roraima peut utiliser tout ce qu'elle commande. Tu peux en choisir 256 au maximum."
         }
       },
       "reauth_confirm": {
@@ -56,7 +56,7 @@
           "devices": "Appareils"
         },
         "data_description": {
-          "devices": "La liste affiche les appareils dotés d'interrupteurs, de lumières, de serrures, de volets, de ventilateurs, de climatiseurs, de vannes, de boutons ou de capteurs, ainsi que les entités qui n'appartiennent à aucun appareil. Les groupes n'apparaissent pas, car ils commandent aussi des appareils que tu n'as pas choisis. Une entité créée à partir d'un modèle (template) exécute ses propres actions et peut commander d'autres appareils, choisis-la donc seulement si Roraima peut utiliser tout ce qu'elle commande. Tu peux en choisir 256 au maximum."
+          "devices": "La liste affiche les appareils de Home Assistant ainsi que les entités qui n'appartiennent à aucun appareil. Pour ceux que tu choisis, Roraima reçoit leurs états et peut utiliser les actions que Home Assistant propose pour eux. Les groupes, les scènes, les scripts et les automatisations n'apparaissent pas, car ils commandent aussi des appareils que tu n'as pas choisis. Une entité créée à partir d'un modèle (template) exécute ses propres actions et peut commander d'autres appareils, choisis-la donc seulement si Roraima peut utiliser tout ce qu'elle commande. Tu peux en choisir 256 au maximum."
         }
       }
     },

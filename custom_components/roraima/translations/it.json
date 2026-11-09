@@ -18,7 +18,7 @@
           "devices": "Dispositivi"
         },
         "data_description": {
-          "devices": "L'elenco mostra i dispositivi con interruttori, luci, serrature, tapparelle, ventilatori, climatizzatori, valvole, pulsanti o sensori, e le entità che non appartengono a nessun dispositivo. I gruppi non compaiono, perché comandano anche dispositivi che non hai scelto. Un'entità creata da un modello (template) esegue azioni sue e può comandare altri dispositivi, quindi sceglila solo se Roraima può usare tutto ciò che comanda. Puoi sceglierne al massimo 256."
+          "devices": "L'elenco mostra i dispositivi di Home Assistant e le entità che non appartengono a nessun dispositivo. Di quelli che scegli, Roraima riceve gli stati e può usare le azioni che Home Assistant mette a disposizione. Gruppi, scene, script e automazioni non compaiono, perché comandano anche dispositivi che non hai scelto. Un'entità creata da un modello (template) esegue azioni sue e può comandare altri dispositivi, quindi sceglila solo se Roraima può usare tutto ciò che comanda. Puoi sceglierne al massimo 256."
         }
       },
       "reauth_confirm": {
@@ -56,7 +56,7 @@
           "devices": "Dispositivi"
         },
         "data_description": {
-          "devices": "L'elenco mostra i dispositivi con interruttori, luci, serrature, tapparelle, ventilatori, climatizzatori, valvole, pulsanti o sensori, e le entità che non appartengono a nessun dispositivo. I gruppi non compaiono, perché comandano anche dispositivi che non hai scelto. Un'entità creata da un modello (template) esegue azioni sue e può comandare altri dispositivi, quindi sceglila solo se Roraima può usare tutto ciò che comanda. Puoi sceglierne al massimo 256."
+          "devices": "L'elenco mostra i dispositivi di Home Assistant e le entità che non appartengono a nessun dispositivo. Di quelli che scegli, Roraima riceve gli stati e può usare le azioni che Home Assistant mette a disposizione. Gruppi, scene, script e automazioni non compaiono, perché comandano anche dispositivi che non hai scelto. Un'entità creata da un modello (template) esegue azioni sue e può comandare altri dispositivi, quindi sceglila solo se Roraima può usare tutto ciò che comanda. Puoi sceglierne al massimo 256."
         }
       }
     },

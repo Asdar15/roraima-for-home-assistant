@@ -18,7 +18,7 @@
           "devices": "Devices"
         },
         "data_description": {
-          "devices": "The list shows devices with switches, lights, locks, covers, fans, climate controls, valves, buttons or sensors, and entities that do not belong to a device. Groups are left out, because they also control devices you have not chosen. An entity made from a template runs its own actions and can control other devices, so choose it only if Roraima may use everything it controls. You can select up to 256."
+          "devices": "The list shows the devices of Home Assistant and the entities that do not belong to a device. For the ones you choose, Roraima receives their states and can use the actions that Home Assistant offers for them. Groups, scenes, scripts and automations are left out, because they also control devices you have not chosen. An entity made from a template runs its own actions and can control other devices, so choose it only if Roraima may use everything it controls. You can select up to 256."
         }
       },
       "reauth_confirm": {
@@ -56,7 +56,7 @@
           "devices": "Devices"
         },
         "data_description": {
-          "devices": "The list shows devices with switches, lights, locks, covers, fans, climate controls, valves, buttons or sensors, and entities that do not belong to a device. Groups are left out, because they also control devices you have not chosen. An entity made from a template runs its own actions and can control other devices, so choose it only if Roraima may use everything it controls. You can select up to 256."
+          "devices": "The list shows the devices of Home Assistant and the entities that do not belong to a device. For the ones you choose, Roraima receives their states and can use the actions that Home Assistant offers for them. Groups, scenes, scripts and automations are left out, because they also control devices you have not chosen. An entity made from a template runs its own actions and can control other devices, so choose it only if Roraima may use everything it controls. You can select up to 256."
         }
       }
     },
