@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 import logging
+import re
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import area_registry as ar
@@ -34,12 +35,15 @@ class Row:
 GROUP_PLATFORM = "group"
 ATTR_MEMBERS = "entity_id"
 RUNNER_DOMAINS = frozenset({"automation", "scene", "script"})
+# Where people are is personal data: people, trackers and zones are never shared.
+LOCATION_DOMAINS = re.compile(r"^(person|device_tracker|zone)$")
 
 
 def _shareable(hass: HomeAssistant, entry: er.RegistryEntry) -> bool:
     if (
         not DOMAIN_FORM.fullmatch(entry.domain)
         or entry.domain in RUNNER_DOMAINS
+        or LOCATION_DOMAINS.fullmatch(entry.domain) is not None
         or entry.platform in (DOMAIN, GROUP_PLATFORM)
         or entry.disabled_by is not None
         or not entry.unique_id

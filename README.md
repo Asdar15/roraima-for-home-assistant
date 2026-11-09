@@ -39,9 +39,9 @@ the devices you choose can be used in the rentals and services you sell on Rorai
   attributes that describe the entity (name, icon, picture, unit, class, supported features), lists,
   values that hold a web address or a path and attributes whose name suggests a secret, such as a
   token, are never sent.
-- **Positions stay home.** Latitude, longitude, GPS accuracy and altitude are never sent, whatever
-  entity holds them. If you share a person or a tracker, Roraima receives only its state, such as
-  home or away.
+- **Places stay home.** People, trackers and zones are never offered. An attribute whose name tells a
+  place (latitude, longitude, GPS, location, address, IP address, altitude, elevation, course,
+  heading, accuracy, geo) is never sent, whatever entity holds it.
 
 Names of actions, fields and attributes are sent in the language of your Home Assistant.
 

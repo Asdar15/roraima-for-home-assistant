@@ -157,3 +157,17 @@ async def test_scenes_scripts_and_automations_are_never_offered(hass: HomeAssist
     hass.states.async_set("automation.1700000000000", "on", {"id": "1700000000000"})
     labels = [row.label for row in shareable_rows(hass).values()]
     assert labels == ["Lavatrice di prova HAI", "Luce lavanderia di prova HAI"]
+
+
+async def test_people_trackers_and_zones_are_never_offered(hass: HomeAssistant) -> None:
+    """Where people are is personal data: people, trackers and zones never appear in the choice."""
+    _test_helpers(hass)
+    registry = er.async_get(hass)
+    for domain, platform, unique_id in (
+        ("person", "person", "mario"),
+        ("device_tracker", "mobile_app", "telefono-mario"),
+        ("zone", "zone", "lavoro"),
+    ):
+        registry.async_get_or_create(domain, platform, unique_id, original_name=unique_id)
+    labels = [row.label for row in shareable_rows(hass).values()]
+    assert labels == ["Lavatrice di prova HAI", "Luce lavanderia di prova HAI"]

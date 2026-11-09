@@ -2,9 +2,9 @@
 
 An attribute travels when its value is a number, a text or yes/no. The ones that describe the entity
 instead of measuring it (its name, icon, picture, unit, class, features) stay home, and so does any
-list or table. Names that can hold a secret, values that hold an address or a path, and where a
-person, a phone or a tracker is (latitude, longitude, GPS accuracy, altitude) never leave either:
-the state of a person or a tracker does.
+list or table. Names that can hold a secret, values that hold an address or a path, and any name
+that tells a place (latitude, gps_accuracy, location_name, ip_address, heading...) never leave
+either.
 """
 
 from __future__ import annotations
@@ -36,8 +36,12 @@ DESCRIPTIVE = frozenset(
 )
 # A camera keeps the key to its own pictures in `access_token`; any such name stays home.
 _SECRET = re.compile(r"token|secret|passw|api_?key|credential|cookie|auth")
-# A position is personal data: it never leaves, in an announce or in a state.
-_LOCATION = re.compile(r"^(latitude|longitude|gps_accuracy|altitude)$")
+# A place is personal data: a name with one of these pieces between "_" never leaves, in an
+# announce or in a state (gps_accuracy, location_name, ip_address...).
+_PLACE = re.compile(
+    r"(^|_)(lat|lon|lng|latitude|longitude|gps|location|address|altitude|elevation|course"
+    r"|heading|accuracy|geo)(_|$)"
+)
 # An address or a path can carry a key in it (a picture or a stream with ?token=...), and a path
 # shows the files of the host: neither leaves.
 _ADDRESS = re.compile(r"://|^/|[?&][a-z_]*token=", re.IGNORECASE)
@@ -66,7 +70,7 @@ def shareable(name: Any) -> bool:
         and ATTRIBUTE_FORM.fullmatch(name) is not None
         and name not in DESCRIPTIVE
         and _SECRET.search(name) is None
-        and _LOCATION.fullmatch(name) is None
+        and _PLACE.search(name) is None
     )
 
 

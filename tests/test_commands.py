@@ -407,28 +407,47 @@ async def test_attribute_changes_are_sent(hass: HomeAssistant, server: FakeServe
     await hass.config_entries.async_unload(entry.entry_id)
 
 
-async def test_position_never_leaves(hass: HomeAssistant, server: FakeServer) -> None:
-    """A shared tracker sends its state and its other values; where it is never leaves home."""
-    er.async_get(hass).async_get_or_create(
-        "device_tracker", "demo", "bici-1", suggested_object_id="bici", original_name="Bici"
+async def test_place_never_leaves(hass: HomeAssistant, server: FakeServer) -> None:
+    """A shared phone keeps its tracker home, and no value that tells a place ever leaves:
+    neither in the announce nor in a state, even when only the place changes."""
+    owner = MockConfigEntry(domain="demo")
+    owner.add_to_hass(hass)
+    phone = dr.async_get(hass).async_get_or_create(
+        config_entry_id=owner.entry_id, identifiers={("demo", "telefono")}, name="Telefono"
     )
-    where = {"latitude": 45.0703, "longitude": 7.6869, "gps_accuracy": 12, "altitude": 240}
-    others = {"battery_level": 80, "source_type": "gps", "friendly_name": "Bici"}
-    hass.states.async_set("device_tracker.bici", "home", {**others, **where})
-    row = entity_row_id("device_tracker", "demo", "bici-1")
-    key = part_key("device_tracker", "demo", "bici-1")
+    registry = er.async_get(hass)
+    for domain, unique_id, object_id in (
+        ("device_tracker", "telefono-gps", "telefono"),
+        ("sensor", "telefono-battery", "telefono_batteria"),
+    ):
+        registry.async_get_or_create(
+            domain, "demo", unique_id, device_id=phone.id, suggested_object_id=object_id
+        )
+    where = {
+        "latitude": 45.0703, "longitude": 7.6869, "gps_accuracy": 12, "altitude": 240,
+        "location_name": "Casa Rossi", "ip_address": "192.168.1.20", "heading": 91,
+    }
+    hass.states.async_set("device_tracker.telefono", "home", {"source_type": "gps", **where})
+    hass.states.async_set("sensor.telefono_batteria", "80", {"battery_charging": False, **where})
+    row = f"d{phone.id}"
+    key = part_key("sensor", "demo", "telefono-battery")
     entry, socket = await _ready(hass, server, [row])
-    part = _parts(socket)[key]
-    assert part["state"] == "home"
-    assert set(part["attributes"]) == {"battery_level", "source_type"}
-    hass.states.async_set("device_tracker.bici", "home", {**others, **where, "latitude": 45.1})
-    hass.states.async_set(
-        "device_tracker.bici", "not_home", {**others, "latitude": 45.2, "longitude": 7.7, "altitude": 300}
+    parts = _parts(socket)
+    assert list(parts) == [key]
+    assert set(parts[key]["attributes"]) == {"battery_charging"}
+    resp = await _command(
+        socket, device=row, part=part_key("device_tracker", "demo", "telefono-gps"), action="see"
     )
+    assert resp["error"] == "part_unknown"
+    hass.states.async_set(
+        "sensor.telefono_batteria", "80", {"battery_charging": False, **where, "latitude": 45.1}
+    )
+    hass.states.async_set("sensor.telefono_batteria", "79", {"battery_charging": False, "latitude": 45.2})
     await wait_until(lambda: socket.of_type("state"))
-    assert socket.of_type("state")[0]["devices"] == {row: {key: "not_home"}}
+    assert socket.of_type("state")[0]["devices"] == {row: {key: "79"}}
     sent = json.dumps(socket.sent)
-    assert not any(name in sent for name in where) and "45.0703" not in sent and "45.2" not in sent
+    assert not any(name in sent for name in where)
+    assert not any(value in sent for value in ("45.0703", "45.1", "45.2", "Casa Rossi", "192.168.1.20"))
     await hass.config_entries.async_unload(entry.entry_id)
 
 

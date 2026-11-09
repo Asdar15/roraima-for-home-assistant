@@ -19,6 +19,25 @@ from .test_commands import LAMP_PART, _entrance
 from .test_connection import _setup
 
 
+# Every name that tells a place, each by one of its pieces between "_".
+PLACES = {
+    "latitude": 45.07,
+    "longitude": 7.68,
+    "lat": 45.07,
+    "lon": 7.68,
+    "home_lng": 7.68,
+    "gps_accuracy": 12,
+    "location_name": "Casa",
+    "ip_address": "192.168.1.20",
+    "altitude": 240,
+    "elevation": 239,
+    "course": 90,
+    "heading": 91,
+    "accuracy": 5,
+    "geo_hash": "u0j2",
+}
+
+
 def test_only_simple_attributes_travel() -> None:
     """Numbers, texts and yes/no; never what describes the entity, a list, a secret or an address."""
     state = State(
@@ -36,19 +55,16 @@ def test_only_simple_attributes_travel() -> None:
             "not_a_number": float("nan"),
             "media_position_updated_at": object(),
             "media_duration": None,
-            "latitude": 45.07,
-            "longitude": 7.68,
-            "gps_accuracy": 12,
-            "altitude": 240,
+            **PLACES,
             "volume_level": 0.4,
             "is_volume_muted": False,
             "media_title": "News",
         },
     )
     assert attribute_keys(state) == ["is_volume_muted", "media_title", "volume_level"]
-    # A position never travels, even if it was announced by mistake.
-    assert attribute_keys(state, kept=["latitude"]) == ["is_volume_muted", "media_title", "volume_level"]
-    assert attribute_texts(state, ["latitude", "longitude", "gps_accuracy", "altitude"]) == {}
+    # A place never travels, even if it was announced by mistake.
+    assert attribute_keys(state, kept=list(PLACES)) == ["is_volume_muted", "media_title", "volume_level"]
+    assert attribute_texts(state, list(PLACES)) == {}
     assert attribute_texts(state, ["is_volume_muted", "volume_level"]) == {
         "is_volume_muted": "false",
         "volume_level": "0.4",
