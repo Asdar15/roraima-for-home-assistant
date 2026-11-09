@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connect to Roraima",
-        "description": "Enter the pairing code from your Roraima panel ({panel_url}). The panel shows the code only once, when you create the connection.",
+        "description": "Open your [Roraima panel]({panel_url}), press **Create pairing code** and paste here the code that appears. The panel shows it only once.",
         "data": {
           "code": "Pairing code"
         },
@@ -23,7 +23,7 @@
       },
       "reauth_confirm": {
         "title": "New pairing code",
-        "description": "Roraima no longer accepts the code of this Home Assistant. Create a new connection in your Roraima panel ({panel_url}) and enter the new code here.",
+        "description": "Roraima no longer accepts the code of this Home Assistant. Open your [Roraima panel]({panel_url}), press **Create pairing code** and paste the new code here.",
         "data": {
           "code": "Pairing code"
         },

@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connexion à Roraima",
-        "description": "Saisis le code d'appairage de ton panneau Roraima ({panel_url}). Le panneau n'affiche le code qu'une seule fois, lorsque tu crées la connexion.",
+        "description": "Ouvre ton [panneau Roraima]({panel_url}), appuie sur **Créer le code d'appairage** et colle ici le code qui s'affiche. Le panneau ne l'affiche qu'une seule fois.",
         "data": {
           "code": "Code d'appairage"
         },
@@ -23,7 +23,7 @@
       },
       "reauth_confirm": {
         "title": "Nouveau code d'appairage",
-        "description": "Roraima n'accepte plus le code de ce Home Assistant. Crée une nouvelle connexion dans ton panneau Roraima ({panel_url}) et saisis ici le nouveau code.",
+        "description": "Roraima n'accepte plus le code de ce Home Assistant. Ouvre ton [panneau Roraima]({panel_url}), appuie sur **Créer le code d'appairage** et colle ici le nouveau code.",
         "data": {
           "code": "Code d'appairage"
         },

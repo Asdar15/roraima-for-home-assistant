@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Połączenie z platformą Roraima",
-        "description": "Wpisz kod parowania z panelu Roraima ({panel_url}). Panel pokazuje kod tylko raz, w chwili tworzenia połączenia.",
+        "description": "Otwórz [panel Roraima]({panel_url}), naciśnij **Utwórz kod parowania** i wklej tutaj kod, który się pojawi. Panel pokazuje go tylko raz.",
         "data": {
           "code": "Kod parowania"
         },
@@ -23,7 +23,7 @@
       },
       "reauth_confirm": {
         "title": "Nowy kod parowania",
-        "description": "Roraima nie akceptuje już kodu tego Home Assistant. Utwórz nowe połączenie w panelu Roraima ({panel_url}) i wpisz tutaj nowy kod.",
+        "description": "Roraima nie akceptuje już kodu tego Home Assistant. Otwórz [panel Roraima]({panel_url}), naciśnij **Utwórz kod parowania** i wklej tutaj nowy kod.",
         "data": {
           "code": "Kod parowania"
         },

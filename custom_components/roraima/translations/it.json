@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Collegamento a Roraima",
-        "description": "Inserisci il codice di abbinamento che trovi nel tuo pannello di Roraima ({panel_url}). Il pannello lo mostra una volta sola, quando crei il collegamento.",
+        "description": "Apri il tuo [pannello di Roraima]({panel_url}), premi **Crea il codice di abbinamento** e incolla qui il codice che compare. Il pannello lo mostra una volta sola.",
         "data": {
           "code": "Codice di abbinamento"
         },
@@ -23,7 +23,7 @@
       },
       "reauth_confirm": {
         "title": "Nuovo codice di abbinamento",
-        "description": "Roraima non accetta più il codice di questo Home Assistant. Crea un nuovo collegamento nel tuo pannello di Roraima ({panel_url}) e inserisci qui il nuovo codice.",
+        "description": "Roraima non accetta più il codice di questo Home Assistant. Apri il tuo [pannello di Roraima]({panel_url}), premi **Crea il codice di abbinamento** e incolla qui il nuovo codice.",
         "data": {
           "code": "Codice di abbinamento"
         },

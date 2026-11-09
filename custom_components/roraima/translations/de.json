@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Mit Roraima verbinden",
-        "description": "Gib den Kopplungscode aus deinem Roraima-Panel ein ({panel_url}). Das Panel zeigt den Code nur einmal an, wenn du die Verbindung erstellst.",
+        "description": "Öffne dein [Roraima-Panel]({panel_url}), drücke **Kopplungscode erstellen** und füge hier den angezeigten Code ein. Das Panel zeigt ihn nur einmal an.",
         "data": {
           "code": "Kopplungscode"
         },
@@ -23,7 +23,7 @@
       },
       "reauth_confirm": {
         "title": "Neuer Kopplungscode",
-        "description": "Roraima akzeptiert den Code dieses Home Assistant nicht mehr. Erstelle in deinem Roraima-Panel ({panel_url}) eine neue Verbindung und gib hier den neuen Code ein.",
+        "description": "Roraima akzeptiert den Code dieses Home Assistant nicht mehr. Öffne dein [Roraima-Panel]({panel_url}), drücke **Kopplungscode erstellen** und füge hier den neuen Code ein.",
         "data": {
           "code": "Kopplungscode"
         },

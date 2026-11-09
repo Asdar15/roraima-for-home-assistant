@@ -44,12 +44,12 @@ Shared domains: `switch`, `light`, `lock`, `cover`, `fan`, `climate`, `valve`, `
 
 ## Setup
 
-1. In your Roraima panel, open **Technologies** and choose **Connect Home Assistant**. The panel shows a
-   pairing code once.
-2. In Home Assistant, go to **Settings → Devices & services → Add integration**, search for
-   **Roraima** and enter the code.
-3. Choose the devices to share. You can change the selection at any time from the integration
-   options.
+1. In Home Assistant, go to **Settings → Devices & services → Add integration** and search for
+   **Roraima**.
+2. The window links to your Roraima panel, which opens on **Technologies → Home Assistant**. Press
+   **Create pairing code**: the panel shows the code once.
+3. Paste the code in the Home Assistant window, then choose the devices to share. You can change the
+   selection at any time from the integration options.
 
 ## Your Roraima products in Home Assistant
 

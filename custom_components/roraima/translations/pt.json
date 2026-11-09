@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Ligar à Roraima",
-        "description": "Introduz o código de emparelhamento do teu painel da Roraima ({panel_url}). O painel mostra o código uma única vez, quando crias a ligação.",
+        "description": "Abre o teu [painel da Roraima]({panel_url}), carrega em **Criar código de emparelhamento** e cola aqui o código que aparece. O painel mostra-o uma única vez.",
         "data": {
           "code": "Código de emparelhamento"
         },
@@ -23,7 +23,7 @@
       },
       "reauth_confirm": {
         "title": "Novo código de emparelhamento",
-        "description": "A Roraima já não aceita o código deste Home Assistant. Cria uma nova ligação no teu painel da Roraima ({panel_url}) e introduz aqui o novo código.",
+        "description": "A Roraima já não aceita o código deste Home Assistant. Abre o teu [painel da Roraima]({panel_url}), carrega em **Criar código de emparelhamento** e cola aqui o novo código.",
         "data": {
           "code": "Código de emparelhamento"
         },

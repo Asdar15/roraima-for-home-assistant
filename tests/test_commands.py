@@ -25,7 +25,7 @@ LOCK_PART = part_key("lock", "demo", "porta-lock")
 LAMP_PART = part_key("light", "demo", "ingresso-light")
 BATTERY_PART = part_key("sensor", "demo", "porta-battery")
 SCENE_PART = part_key("scene", "demo", "arrivo")
-PANEL_PAGE = "https://roraima.io/vendor.php?dispatch=iot_cloud_accounts.manage#iot-ha-links"
+PANEL_PAGE = "https://roraima.io/vendor.php?dispatch=iot_cloud_accounts.manage&selected_section=home_assistant"
 
 
 @pytest.fixture(autouse=True)
