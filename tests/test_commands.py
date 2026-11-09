@@ -285,31 +285,39 @@ async def test_parameters_in_their_limits_only(hass: HomeAssistant, server: Fake
 async def test_required_fields_and_choices(hass: HomeAssistant, server: FakeServer) -> None:
     """A required field must be there, a choice must be one of its options, and a service the
     thermostat does not support (no preset modes) is not an action."""
-    row = _thermostat(hass)
+    thermostat = _thermostat(hass)
+    lamp = _entrance(hass)
+    hass.states.async_set(
+        "light.ingresso", "off", {"supported_color_modes": ["brightness"], "supported_features": 8}
+    )
     humidity = async_mock_service(hass, "climate", "set_humidity")
     temperature = async_mock_service(hass, "climate", "set_temperature")
     preset = async_mock_service(hass, "climate", "set_preset_mode")
-    entry, socket = await _ready(hass, server, [row])
-    part = _parts(socket)[THERMOSTAT_PART]
-    assert part["actions"] == ["set_humidity", "set_temperature"]
-    hvac = next(f for f in part["action_info"]["set_temperature"]["fields"] if f["key"] == "hvac_mode")
-    assert hvac["type"] == "select" and "heat" in hvac["options"]
-    for action, params, error in (
-        ("set_humidity", {}, "params_invalid"),
-        ("set_humidity", {"humidity": 120}, "params_invalid"),
-        ("set_temperature", {"temperature": 21, "hvac_mode": "boost"}, "params_invalid"),
-        ("set_preset_mode", {"preset_mode": "away"}, "action_not_allowed"),
+    off = async_mock_service(hass, "light", "turn_off")
+    entry, socket = await _ready(hass, server, [thermostat, lamp])
+    parts = _parts(socket)
+    assert parts[THERMOSTAT_PART]["actions"] == ["set_humidity", "set_temperature"]
+    flash = next(f for f in parts[LAMP_PART]["action_info"]["turn_off"]["fields"] if f["key"] == "flash")
+    assert flash["type"] == "select" and flash["options"] == ["long", "short"]
+    for device, part, action, params, error in (
+        (thermostat, THERMOSTAT_PART, "set_humidity", {}, "params_invalid"),
+        (thermostat, THERMOSTAT_PART, "set_humidity", {"humidity": 120}, "params_invalid"),
+        (thermostat, THERMOSTAT_PART, "set_preset_mode", {"preset_mode": "away"}, "action_not_allowed"),
+        (lamp, LAMP_PART, "turn_off", {"flash": "medium"}, "params_invalid"),
     ):
-        resp = await _command(socket, device=row, part=THERMOSTAT_PART, action=action, params=params)
+        resp = await _command(socket, device=device, part=part, action=action, params=params)
         assert resp["error"] == error, (action, params)
-    assert humidity == [] and temperature == [] and preset == []
+    assert humidity == [] and temperature == [] and preset == [] and off == []
     resp = await _command(
-        socket, device=row, part=THERMOSTAT_PART, action="set_temperature",
-        params={"temperature": 21.5, "hvac_mode": "heat"},
+        socket, device=thermostat, part=THERMOSTAT_PART, action="set_temperature",
+        params={"temperature": 21.5},
     )
     assert resp["ok"] is True
-    assert [dict(c.data) for c in temperature] == [
-        {"entity_id": "climate.salotto", "temperature": 21.5, "hvac_mode": "heat"}
+    resp = await _command(socket, device=lamp, part=LAMP_PART, action="turn_off", params={"flash": "short"})
+    assert resp["ok"] is True
+    assert [dict(c.data) for c in temperature + off] == [
+        {"entity_id": "climate.salotto", "temperature": 21.5},
+        {"entity_id": "light.ingresso", "flash": "short"},
     ]
     await hass.config_entries.async_unload(entry.entry_id)
 

@@ -131,7 +131,8 @@ class RoraimaClient:
     async def async_stop(self) -> None:
         """Stop for good: unload or removal."""
         self._stopped = True
-        self._resync.async_cancel()
+        # Shut down, not just cancel: a resync still running would set a new timer when it ends.
+        self._resync.async_shutdown()
         self._relay.stop()
         for task in list(self._tasks):
             task.cancel()
