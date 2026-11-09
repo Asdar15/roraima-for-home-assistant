@@ -271,6 +271,8 @@ async def test_parameters_in_their_limits_only(hass: HomeAssistant, server: Fake
         {"profile": "http://192.168.1.1/relax.csv"},
         {"profile": "file:/config/light_profiles.csv"},
         {"profile": "/config/light_profiles.csv"},
+        {"profile": "../light_profiles.csv"},
+        {"profile": "relax\\evening"},
         [50],
     ):
         resp = await _command(socket, device=row, part=LAMP_PART, action="turn_on", params=params)

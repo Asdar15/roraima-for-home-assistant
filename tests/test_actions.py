@@ -116,11 +116,18 @@ async def test_parameters_are_announced_fields_only(hass: HomeAssistant, params:
         "FILE:/etc/passwd",
         " file:/config/secrets.yaml",
         "mailto:host@example.org",
+        "Media-Source:local",
         "/config/secrets.yaml",
         " /media/x.mp3",
         "\\\\nas\\share",
         "\\x",
+        "Ciao \\ arrivo",
         "C:\\Windows",
+        "..",
+        "../secrets.yaml",
+        "media/../../secrets.yaml",
+        "local/..",
+        "Ciao:arrivo",
     ],
 )
 async def test_text_never_names_an_address_or_a_path(hass: HomeAssistant, value: str) -> None:
@@ -133,5 +140,5 @@ async def test_text_never_names_an_address_or_a_path(hass: HomeAssistant, value:
 async def test_words_and_times_are_not_addresses(hass: HomeAssistant) -> None:
     """A colon followed by a space, a time or a plain word is an ordinary text."""
     fields = part_actions(DESCRIPTIONS, _lock(hass), State("lock.porta", "locked"))["unlock"]
-    for value in ("Ciao: arrivo", "08:30", "1234", "heat_cool", "Eco 40-60"):
+    for value in ("Ciao: arrivo", "08:30", "1234", "heat_cool", "Eco 40-60", "Wait..", "3.5"):
         assert check_params(fields, {"code": value, "mode": value}) == {"code": value, "mode": value}
