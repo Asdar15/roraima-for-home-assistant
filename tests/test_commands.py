@@ -420,6 +420,7 @@ async def test_place_never_leaves(hass: HomeAssistant, server: FakeServer) -> No
     registry = er.async_get(hass)
     for domain, unique_id, object_id in (
         ("device_tracker", "telefono-gps", "telefono"),
+        ("sensor", "telefono-geocoded_location", "telefono_posizione"),
         ("sensor", "telefono-battery", "telefono_batteria"),
     ):
         registry.async_get_or_create(
@@ -431,16 +432,20 @@ async def test_place_never_leaves(hass: HomeAssistant, server: FakeServer) -> No
     }
     hass.states.async_set("device_tracker.telefono", "home", {"source_type": "gps", **where})
     hass.states.async_set("sensor.telefono_batteria", "80", {"battery_charging": False, **where})
+    hass.states.async_set("sensor.telefono_posizione", "Via Roma 1, Torino", {"locality": "Torino"})
     row = f"d{phone.id}"
     key = part_key("sensor", "demo", "telefono-battery")
     entry, socket = await _ready(hass, server, [row])
     parts = _parts(socket)
     assert list(parts) == [key]
     assert set(parts[key]["attributes"]) == {"battery_charging"}
-    resp = await _command(
-        socket, device=row, part=part_key("device_tracker", "demo", "telefono-gps"), action="see"
-    )
-    assert resp["error"] == "part_unknown"
+    for part in (
+        part_key("device_tracker", "demo", "telefono-gps"),
+        part_key("sensor", "demo", "telefono-geocoded_location"),
+    ):
+        resp = await _command(socket, device=row, part=part, action="see")
+        assert resp["error"] == "part_unknown"
+    hass.states.async_set("sensor.telefono_posizione", "Via Garibaldi 2, Torino", {"locality": "Torino"})
     hass.states.async_set(
         "sensor.telefono_batteria", "80", {"battery_charging": False, **where, "latitude": 45.1}
     )
@@ -449,7 +454,10 @@ async def test_place_never_leaves(hass: HomeAssistant, server: FakeServer) -> No
     assert socket.of_type("state")[0]["devices"] == {row: {key: "79"}}
     sent = json.dumps(socket.sent)
     assert not any(name in sent for name in where)
-    assert not any(value in sent for value in ("45.0703", "45.1", "45.2", "Casa Rossi", "192.168.1.20"))
+    assert not any(
+        value in sent
+        for value in ("45.0703", "45.1", "45.2", "Casa Rossi", "192.168.1.20", "Via Roma", "Via Garibaldi", "Torino")
+    )
     await hass.config_entries.async_unload(entry.entry_id)
 
 

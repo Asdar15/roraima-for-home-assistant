@@ -35,8 +35,15 @@ class Row:
 GROUP_PLATFORM = "group"
 ATTR_MEMBERS = "entity_id"
 RUNNER_DOMAINS = frozenset({"automation", "scene", "script"})
-# Where people are is personal data: people, trackers and zones are never shared.
+# Where people are is personal data: people, trackers and zones are never shared, nor a part whose
+# key tells a place (the geocoded location of a phone has the street address as its state).
 LOCATION_DOMAINS = re.compile(r"^(person|device_tracker|zone)$")
+LOCATION_KEY = re.compile(r"(^|_)(geocoded|location|address|gps|coordinates)(_|$)")
+
+
+def _tells_a_place(entry: er.RegistryEntry) -> bool:
+    code = part_key(entry.domain, entry.platform, str(entry.unique_id)).split(".", 1)[1]
+    return LOCATION_KEY.search(code) is not None
 
 
 def _shareable(hass: HomeAssistant, entry: er.RegistryEntry) -> bool:
@@ -47,6 +54,7 @@ def _shareable(hass: HomeAssistant, entry: er.RegistryEntry) -> bool:
         or entry.platform in (DOMAIN, GROUP_PLATFORM)
         or entry.disabled_by is not None
         or not entry.unique_id
+        or _tells_a_place(entry)
     ):
         return False
     state = hass.states.get(entry.entity_id)

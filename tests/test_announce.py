@@ -35,6 +35,20 @@ PLACES = {
     "heading": 91,
     "accuracy": 5,
     "geo_hash": "u0j2",
+    "geocoded": "Via Roma 1",
+    "coordinates": "45.07,7.68",
+    "thoroughfare": "Via Roma",
+    "locality": "Torino",
+    "postal_code": "10121",
+    "zip": "10121",
+    "country": "IT",
+    "administrative_area": "Piemonte",
+    "areas_of_interest": "Centro",
+    "ocean": "none",
+    "inland_water": "Po",
+    "place_name": "Casa",
+    "city": "Torino",
+    "street": "Via Roma",
 }
 
 
@@ -56,14 +70,16 @@ def test_only_simple_attributes_travel() -> None:
             "media_position_updated_at": object(),
             "media_duration": None,
             **PLACES,
+            "current_position": 40,
             "volume_level": 0.4,
             "is_volume_muted": False,
             "media_title": "News",
         },
     )
-    assert attribute_keys(state) == ["is_volume_muted", "media_title", "volume_level"]
+    # "position" is not a place: the current position of a cover travels.
+    assert attribute_keys(state) == ["current_position", "is_volume_muted", "media_title", "volume_level"]
     # A place never travels, even if it was announced by mistake.
-    assert attribute_keys(state, kept=list(PLACES)) == ["is_volume_muted", "media_title", "volume_level"]
+    assert attribute_keys(state, kept=list(PLACES)) == attribute_keys(state)
     assert attribute_texts(state, list(PLACES)) == {}
     assert attribute_texts(state, ["is_volume_muted", "volume_level"]) == {
         "is_volume_muted": "false",

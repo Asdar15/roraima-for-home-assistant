@@ -160,13 +160,19 @@ async def test_scenes_scripts_and_automations_are_never_offered(hass: HomeAssist
 
 
 async def test_people_trackers_and_zones_are_never_offered(hass: HomeAssistant) -> None:
-    """Where people are is personal data: people, trackers and zones never appear in the choice."""
+    """Where people are is personal data: people, trackers, zones and entities whose key tells a
+    place (a geocoded location, a GPS, an address, coordinates) never appear in the choice."""
     _test_helpers(hass)
     registry = er.async_get(hass)
     for domain, platform, unique_id in (
         ("person", "person", "mario"),
         ("device_tracker", "mobile_app", "telefono-mario"),
         ("zone", "zone", "lavoro"),
+        ("sensor", "mobile_app", "telefono-mario_geocoded_location"),
+        ("sensor", "template", "casa-GPS"),
+        ("sensor", "template", "router-wan-ip-address"),
+        ("sensor", "template", "home_coordinates"),
+        ("text", "template", "Location"),
     ):
         registry.async_get_or_create(domain, platform, unique_id, original_name=unique_id)
     labels = [row.label for row in shareable_rows(hass).values()]

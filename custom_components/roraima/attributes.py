@@ -37,10 +37,12 @@ DESCRIPTIVE = frozenset(
 # A camera keeps the key to its own pictures in `access_token`; any such name stays home.
 _SECRET = re.compile(r"token|secret|passw|api_?key|credential|cookie|auth")
 # A place is personal data: a name with one of these pieces between "_" never leaves, in an
-# announce or in a state (gps_accuracy, location_name, ip_address...).
+# announce or in a state (gps_accuracy, location_name, ip_address, postal_code...). "position" is
+# left out on purpose: the current_position of a cover is not a place.
 _PLACE = re.compile(
     r"(^|_)(lat|lon|lng|latitude|longitude|gps|location|address|altitude|elevation|course"
-    r"|heading|accuracy|geo)(_|$)"
+    r"|heading|accuracy|geo|geocoded|coordinates|thoroughfare|locality|postal|zip|country"
+    r"|administrative|areas|ocean|inland|place|city|street)(_|$)"
 )
 # An address or a path can carry a key in it (a picture or a stream with ?token=...), and a path
 # shows the files of the host: neither leaves.
