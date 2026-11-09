@@ -16,19 +16,18 @@ PANEL_URL: Final = "https://roraima.io/vendor.php?dispatch=iot_cloud_accounts.ma
 
 CODE_PATTERN: Final = re.compile(r"^rha_[0-9a-f]{64}$")
 
-ALLOWED_DOMAINS: Final = (
-    "switch",
-    "light",
-    "lock",
-    "cover",
-    "fan",
-    "climate",
-    "valve",
-    "button",
-    "input_boolean",
-    "sensor",
-    "binary_sensor",
-)
+# Contract §2.5: Roraima keeps no list of domains, actions or attributes. Home Assistant names
+# them; these forms and limits are all that is checked.
+DOMAIN_FORM: Final = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
+ACTION_FORM: Final = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
+ATTRIBUTE_FORM: Final = re.compile(r"^[a-z][a-z0-9_]{0,39}$")
+MAX_ACTIONS: Final = 32
+MAX_FIELDS: Final = 16
+MAX_OPTIONS: Final = 32
+MAX_ATTRIBUTES: Final = 16
+LABEL_MAX: Final = 64
+TEXT_MAX: Final = 255
+UNIT_MAX: Final = 32
 
 PROTOCOL_VERSION: Final = 1
 MAX_DEVICES: Final = 256

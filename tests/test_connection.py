@@ -82,8 +82,10 @@ async def test_nothing_shared_nothing_executed(hass: HomeAssistant, server: Fake
 
 
 async def test_only_the_chosen_device_is_announced(hass: HomeAssistant, server: FakeServer) -> None:
-    """The washer is announced with its contract id and key; the light stays private."""
+    """The washer is announced with its contract id, key and services; the light stays private."""
     _test_helpers(hass)
+    for service in ("turn_on", "turn_off", "toggle"):
+        async_mock_service(hass, "switch", service)
     calls = async_mock_service(hass, "light", "turn_on")
     entry = await _setup(hass, [WASHER_ROW])
     socket = server.sockets[0]
@@ -93,7 +95,11 @@ async def test_only_the_chosen_device_is_announced(hass: HomeAssistant, server: 
     assert device["id"] == WASHER_ROW
     assert device["name"] == "Lavatrice di prova HAI"
     assert [p["key"] for p in device["parts"]] == [WASHER_PART]
-    assert device["parts"][0]["actions"] == ["turn_on", "turn_off", "toggle"]
+    part = device["parts"][0]
+    assert part["actions"] == ["toggle", "turn_off", "turn_on"]
+    assert set(part["action_info"]) == set(part["actions"])
+    assert all(info["fields"] == [] for info in part["action_info"].values())
+    assert part["attributes"] == {}
     assert socket.of_type("announce_done")[0]["devices"] == [WASHER_ROW]
     assert hass.states.get("sensor.roraima_shared_devices").state == "1"
     socket.push({"v": 1, "type": "cmd", "id": "fedcba9876543210", "device": LIGHT_ROW,
@@ -117,7 +123,7 @@ async def test_ping_and_removal_revokes(hass: HomeAssistant, server: FakeServer)
 
 
 async def test_groups_are_never_offered(hass: HomeAssistant) -> None:
-    """A group moves entities that were not chosen: it is neither offered nor commandable."""
+    """A group, or any entity that lists other entities, moves entities that were not chosen."""
     _test_helpers(hass)
     registry = er.async_get(hass)
     registry.async_get_or_create(
@@ -132,5 +138,22 @@ async def test_groups_are_never_offered(hass: HomeAssistant) -> None:
     hass.states.async_set(
         "light.living_room", "off", {"entity_id": ("light.a", "light.b")}
     )
+    labels = [row.label for row in shareable_rows(hass).values()]
+    assert labels == ["Lavatrice di prova HAI", "Luce lavanderia di prova HAI"]
+
+
+async def test_scenes_scripts_and_automations_are_never_offered(hass: HomeAssistant) -> None:
+    """They run actions on other entities, chosen or not: they never appear in the choice."""
+    _test_helpers(hass)
+    registry = er.async_get(hass)
+    for domain, platform, unique_id in (
+        ("script", "script", "open_everything"),
+        ("automation", "automation", "1700000000000"),
+        ("scene", "homeassistant", "arrival"),
+        ("scene", "hue", "living-room-relax"),
+    ):
+        registry.async_get_or_create(domain, platform, unique_id, original_name=unique_id)
+    hass.states.async_set("script.open_everything", "off", {"mode": "single", "current": 0})
+    hass.states.async_set("automation.1700000000000", "on", {"id": "1700000000000"})
     labels = [row.label for row in shareable_rows(hass).values()]
     assert labels == ["Lavatrice di prova HAI", "Luce lavanderia di prova HAI"]

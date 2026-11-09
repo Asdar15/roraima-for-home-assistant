@@ -11,7 +11,7 @@ from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
-from .const import ALLOWED_DOMAINS, DOMAIN
+from .const import DOMAIN, DOMAIN_FORM
 from .ids import device_row_id, entity_row_id, part_key
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,14 +27,19 @@ class Row:
     parts: dict[str, er.RegistryEntry]
 
 
-# A group moves all its members, shared or not; so does any entity that lists them.
+# A group moves all its members, shared or not; so does any entity that lists them (a scene, a
+# light group). Scenes, scripts and automations run actions of their own on any entity: like groups,
+# they would let Roraima move devices the seller did not choose (law 3). Every other domain is
+# shared, with the services Home Assistant offers for it (contract §2.5).
 GROUP_PLATFORM = "group"
 ATTR_MEMBERS = "entity_id"
+RUNNER_DOMAINS = frozenset({"automation", "scene", "script"})
 
 
 def _shareable(hass: HomeAssistant, entry: er.RegistryEntry) -> bool:
     if (
-        entry.domain not in ALLOWED_DOMAINS
+        not DOMAIN_FORM.fullmatch(entry.domain)
+        or entry.domain in RUNNER_DOMAINS
         or entry.platform in (DOMAIN, GROUP_PLATFORM)
         or entry.disabled_by is not None
         or not entry.unique_id

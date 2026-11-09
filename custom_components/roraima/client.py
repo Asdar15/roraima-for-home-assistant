@@ -22,8 +22,15 @@ from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util import dt as dt_util
 
-from .announce import build_announce, fingerprint
-from .commands import Target, async_run, resolve
+from .announce import (
+    PartActions,
+    announced_actions,
+    announced_attributes,
+    async_catalog,
+    build_announce,
+    fingerprint,
+)
+from .commands import Target, async_resolve, async_run
 from .const import (
     ANNOUNCES_PER_SECOND,
     CONF_CODE,
@@ -49,7 +56,7 @@ from .const import (
 from .link import LinkError, Outcome, async_open, outcome_for_close
 from .products import ProductHub
 from .selection import shareable_rows
-from .states import StateRelay
+from .states import Followed, StateRelay
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -83,7 +90,9 @@ class RoraimaClient:
         self._stopped = False
         self._sent: dict[str, str] = {}
         self._done: list[str] | None = None
-        self._parts: dict[str, set[str]] = {}
+        # What Roraima received of each shared row: actions and fields, and attributes, by part.
+        self._announced: dict[str, dict[str, PartActions]] = {}
+        self._attributes: dict[str, dict[str, tuple[str, ...]]] = {}
         self._announce_lock = asyncio.Lock()
         self._send_lock = asyncio.Lock()
         self._tokens = float(MESSAGE_BURST)
@@ -94,11 +103,11 @@ class RoraimaClient:
         self._tasks: set[asyncio.Task] = set()
         self._commands: set[asyncio.Task] = set()
         self.command_results: Counter[str] = Counter()
-        self._relay = StateRelay(hass, self._send, self._spawn)
         self.products = ProductHub(hass, entry)
         self._resync = Debouncer(
             hass, _LOGGER, cooldown=5, immediate=False, function=self._async_resync
         )
+        self._relay = StateRelay(hass, self._send, self._spawn, self._attributes_grown)
 
     @property
     def selected(self) -> list[str]:
@@ -136,6 +145,12 @@ class RoraimaClient:
 
     @callback
     def _registry_changed(self, event: Event) -> None:
+        if self._ws is not None:
+            self._resync.async_schedule_call()
+
+    @callback
+    def _attributes_grown(self) -> None:
+        # A shared entity gained an attribute: announce it, at most once every few seconds.
         if self._ws is not None:
             self._resync.async_schedule_call()
 
@@ -279,7 +294,7 @@ class RoraimaClient:
         cmd_id = data.get("id")
         if not isinstance(cmd_id, str) or not CMD_ID.fullmatch(cmd_id):
             return
-        target = resolve(self.hass, self.selected, self._parts, data)
+        target = await async_resolve(self.hass, self.selected, self._announced, data)
         if isinstance(target, str):
             _LOGGER.warning(
                 "Refused a command from Roraima (%s): %r on %r",
@@ -298,7 +313,7 @@ class RoraimaClient:
         task.add_done_callback(self._commands.discard)
 
     async def _async_command(self, cmd_id: str, target: Target) -> None:
-        _LOGGER.info("Roraima runs %s on %s", target.action, target.entity_id)
+        _LOGGER.info("Roraima runs %s.%s on %s", target.domain, target.service, target.entity_id)
         answer = await async_run(self.hass, target)
         try:
             await self._async_reply(cmd_id, answer)
@@ -315,20 +330,33 @@ class RoraimaClient:
                 return
             rows = shareable_rows(self.hass)
             selected = [row_id for row_id in self.selected if row_id in rows][:MAX_DEVICES]
+            catalog = await async_catalog(self.hass, [rows[row_id] for row_id in selected])
+            if self._ws is None:
+                return
             if full:
                 self._sent.clear()
                 self._done = None
             messages = {
-                row_id: build_announce(self.hass, rows[row_id], self._max_bytes)
+                row_id: build_announce(
+                    self.hass,
+                    catalog,
+                    rows[row_id],
+                    self._max_bytes,
+                    self._attributes.get(row_id),
+                )
                 for row_id in selected
             }
-            self._parts = {
-                row_id: {p["key"] for p in message["device"]["parts"]}
-                for row_id, message in messages.items()
+            self._announced = {
+                row_id: announced_actions(message) for row_id, message in messages.items()
+            }
+            self._attributes = {
+                row_id: announced_attributes(message) for row_id, message in messages.items()
             }
             self._relay.track(
                 {
-                    rows[row_id].parts[part["key"]].entity_id: (row_id, part["key"])
+                    rows[row_id].parts[part["key"]].entity_id: Followed(
+                        row_id, part["key"], tuple(part["attributes"])
+                    )
                     for row_id, message in messages.items()
                     for part in message["device"]["parts"]
                 }
@@ -401,7 +429,7 @@ class RoraimaClient:
             "test_address_in_use": tunnel_url() != TUNNEL_URL,
             "selected": len(self.selected),
             "shared": self.shared_count,
-            "parts_per_device": sorted(len(parts) for parts in self._parts.values()),
+            "parts_per_device": sorted(len(parts) for parts in self._announced.values()),
             "followed_parts": self._relay.followed,
             "commands": dict(self.command_results),
             "notices": list(self.notices),
