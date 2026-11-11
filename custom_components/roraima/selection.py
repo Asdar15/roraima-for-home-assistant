@@ -43,9 +43,10 @@ LOCATION_WORD = re.compile(r"(^|_)(geocoded|location|address|gps|coordinates)(_|
 # What tells the home network apart is not shared either, as for attributes (contract §2.5). The
 # names of entities are free texts, so the rule is narrower here: the name of the Wi-Fi or of a
 # host anywhere, but ip and mac only as the last word or before address or addr, so that a plug
-# called "Mac mini" is still shared.
+# called "Mac mini" is still shared. The last word may be followed by a number: Home Assistant
+# names a second entity router_ip_2.
 NETWORK_WORD = re.compile(
-    r"(^|_)(ssid|bssid|hostname)(_|$)|(^|_)(ip|ipv4|ipv6|mac)(_(address|addr)(_|$)|$)"
+    r"(^|_)(ssid|bssid|hostname)(_|$)|(^|_)(ip|ipv4|ipv6|mac)(_(address|addr)(_|$)|(_\d+)?$)"
 )
 _NOT_ALNUM = re.compile(r"[^a-z0-9]+")
 

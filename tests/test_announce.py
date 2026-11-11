@@ -276,10 +276,13 @@ async def test_network_entities_stay_home_and_addresses_are_no_state(
         config_entry_id=owner.entry_id, identifiers={("demo", "router")}, name="Router"
     )
     registry = er.async_get(hass)
-    home = ["router_ssid", "x_external_ip", "x_hostname", "wan_ip_address", "lan_mac_addr", "ap_bssid_5g"]
-    shared = ["mac_mini", "vip_lounge_temperature", "ip_camera_motion", "macro_scene_button", "stream"]
+    home = ["router_ssid", "x_external_ip", "x_hostname", "wan_ip_address", "lan_mac_addr", "ap_bssid_5g",
+            # The second entity of a kind takes a number after its last word.
+            "router_ip_2", "lan_mac_3", "wan_ip_address_2"]
+    shared = ["mac_mini", "mac_mini_2", "vip_lounge_temperature", "ip_camera_motion",
+              "macro_scene_button", "stream"]
     for name in home + shared:
-        domain = "switch" if name == "mac_mini" else "sensor"
+        domain = "switch" if name.startswith("mac_mini") else "sensor"
         registry.async_get_or_create(
             domain, "demo", f"router-{name}", device_id=router.id, suggested_object_id=name
         )
@@ -290,7 +293,7 @@ async def test_network_entities_stay_home_and_addresses_are_no_state(
     await wait_until(lambda: socket.of_type("announce_done"))
     parts = {p["key"]: p for p in socket.of_type("announce")[0]["device"]["parts"]}
     assert sorted(parts) == sorted(
-        part_key("switch" if name == "mac_mini" else "sensor", "demo", f"router-{name}")
+        part_key("switch" if name.startswith("mac_mini") else "sensor", "demo", f"router-{name}")
         for name in shared
     )
     assert parts[part_key("sensor", "demo", "router-stream")]["state"] == "unknown"
