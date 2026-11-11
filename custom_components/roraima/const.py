@@ -21,10 +21,18 @@ CODE_PATTERN: Final = re.compile(r"^rha_[0-9a-f]{64}$")
 DOMAIN_FORM: Final = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
 ACTION_FORM: Final = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 ATTRIBUTE_FORM: Final = re.compile(r"^[a-z][a-z0-9_]{0,39}$")
+# One key of an attribute that is a group: it travels as `<attribute>.<key>`.
+PIECE_FORM: Final = re.compile(r"^[A-Za-z0-9_]{1,40}$")
 MAX_ACTIONS: Final = 32
 MAX_FIELDS: Final = 16
 MAX_OPTIONS: Final = 32
-MAX_ATTRIBUTES: Final = 16
+# Extra values of one part, each key of a group counted: a limit of quantity, never of kind.
+MAX_ATTRIBUTES: Final = 64
+# `<part key>:<attribute>` must fit what Roraima accepts as the key of a measure.
+METRIC_MAX: Final = 128
+# The values inside one free object of a command, and the longest time a command may ask for.
+MAX_OBJECT_ITEMS: Final = 64
+DURATION_MAX: Final = 366 * 86400
 LABEL_MAX: Final = 64
 TEXT_MAX: Final = 255
 UNIT_MAX: Final = 32

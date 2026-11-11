@@ -382,16 +382,23 @@ async def test_attribute_changes_are_sent(hass: HomeAssistant, server: FakeServe
     row = _thermostat(hass)
     entry, socket = await _ready(hass, server, [row])
     attributes = _parts(socket)[THERMOSTAT_PART]["attributes"]
-    assert set(attributes) == {"current_temperature", "hvac_action", "temperature"}
+    assert set(attributes) == {"current_temperature", "hvac_action", "hvac_modes", "temperature"}
     assert attributes["current_temperature"]["state"] == "19.5"
+    assert attributes["hvac_modes"]["state"] == "off, heat"
     state = hass.states.get("climate.salotto")
     hass.states.async_set(
         "climate.salotto", "heat",
-        {**state.attributes, "current_temperature": 20.0, "hvac_modes": ["off", "heat", "cool"]},
+        {
+            **state.attributes, "current_temperature": 20.0, "hvac_modes": ["off", "heat", "cool"],
+            "forecast": [{"temperature": 20}],
+        },
     )
     await wait_until(lambda: socket.of_type("state"))
     assert socket.of_type("state")[0]["devices"] == {
-        row: {f"{THERMOSTAT_PART}:current_temperature": "20.0"}
+        row: {
+            f"{THERMOSTAT_PART}:current_temperature": "20.0",
+            f"{THERMOSTAT_PART}:hvac_modes": "off, heat, cool",
+        }
     }
     state = hass.states.get("climate.salotto")
     hass.states.async_set("climate.salotto", "heat", {**state.attributes, "hvac_action": None})
@@ -404,7 +411,9 @@ async def test_attribute_changes_are_sent(hass: HomeAssistant, server: FakeServe
     async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=6))
     await wait_until(lambda: len(socket.of_type("announce")) == 2)
     attributes = socket.of_type("announce")[1]["device"]["parts"][0]["attributes"]
-    assert set(attributes) == {"current_temperature", "hvac_action", "preset_mode", "temperature"}
+    assert set(attributes) == {
+        "current_temperature", "hvac_action", "hvac_modes", "preset_mode", "temperature"
+    }
     assert attributes["hvac_action"]["state"] == "unknown"
     await hass.config_entries.async_unload(entry.entry_id)
 

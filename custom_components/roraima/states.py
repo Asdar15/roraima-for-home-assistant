@@ -25,7 +25,7 @@ from homeassistant.core import (
 from homeassistant.helpers.event import async_call_later, async_track_state_change_event
 
 from .announce import state_text
-from .attributes import attribute_keys, attribute_texts
+from .attributes import attribute_keys, attribute_texts, room_for
 from .const import MAX_ATTRIBUTES, PROTOCOL_VERSION
 
 _LOGGER = logging.getLogger(__name__)
@@ -150,7 +150,9 @@ class StateRelay:
         """An attribute appeared that the part did not announce: ask for a new announce, once."""
         if self._grown is None or len(followed.attributes) >= MAX_ATTRIBUTES:
             return
-        fresh = frozenset(attribute_keys(new, followed.attributes)) - set(followed.attributes)
+        fresh = frozenset(
+            attribute_keys(new, followed.attributes, room_for(followed.key))
+        ) - set(followed.attributes)
         signaled = self._signaled.get(entity_id, frozenset())
         if not fresh or fresh <= signaled:
             return

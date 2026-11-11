@@ -1,5 +1,6 @@
-"""The announce: names in the language of Home Assistant, simple attributes only, and a message that
-shrinks in order (fields, then attributes, then parts) to stay under the limit."""
+"""The announce: names in the language of Home Assistant, the attributes taken by their form (a
+simple value, a list as one text, a group as one value for each key), and a message that shrinks
+in order (fields, then attributes, then parts) to stay under the limit."""
 
 from __future__ import annotations
 
@@ -12,7 +13,15 @@ from homeassistant.helpers.translation import async_get_translations
 from pytest_homeassistant_custom_component.common import async_mock_service
 
 from custom_components.roraima.announce import _fit
-from custom_components.roraima.attributes import attribute_keys, attribute_texts
+from custom_components.roraima.attributes import (
+    attribute_keys,
+    attribute_texts,
+    candidate_keys,
+    left_home,
+    room_for,
+    value_text,
+)
+from custom_components.roraima.const import MAX_ATTRIBUTES
 
 from .conftest import FakeServer, wait_until
 from .test_commands import LAMP_PART, _entrance
@@ -53,7 +62,8 @@ PLACES = {
 
 
 def test_only_simple_attributes_travel() -> None:
-    """Numbers, texts and yes/no; never what describes the entity, a list, a secret or an address."""
+    """Numbers, texts, yes/no and lists of them; never what describes the entity, a secret, an
+    address or a value that is not simple."""
     state = State(
         "media_player.tv",
         "playing",
@@ -64,6 +74,8 @@ def test_only_simple_attributes_travel() -> None:
             "entity_picture_local": "/api/media_player_proxy/media_player.tv?token=abc",
             "access_token": "abc",
             "source_list": ["HDMI 1", "HDMI 2"],
+            "pictures": ["cover.jpg", "/local/cover.jpg"],
+            "forecast": [{"temperature": 20}],
             "media_content_id": "https://example.org/stream?id=1",
             "Bad Key": 1,
             "not_a_number": float("nan"),
@@ -77,7 +89,13 @@ def test_only_simple_attributes_travel() -> None:
         },
     )
     # "position" is not a place: the current position of a cover travels.
-    assert attribute_keys(state) == ["current_position", "is_volume_muted", "media_title", "volume_level"]
+    assert attribute_keys(state) == [
+        "current_position", "is_volume_muted", "media_title", "source_list", "volume_level"
+    ]
+    # A list is one text; one address in it, or one value that is not simple, keeps it all home.
+    assert attribute_texts(state, ["source_list", "pictures", "forecast"]) == {
+        "source_list": "HDMI 1, HDMI 2", "pictures": "unknown", "forecast": "unknown",
+    }
     # A place never travels, even if it was announced by mistake.
     assert attribute_keys(state, kept=list(PLACES)) == attribute_keys(state)
     assert attribute_texts(state, list(PLACES)) == {}
@@ -134,6 +152,7 @@ def _part(index: int) -> dict[str, Any]:
             "turn_on": {"name": "Turn on", "fields": [{"key": f"f_{n}", **field} for n in range(8)]}
         },
         "attributes": {f"a_{n}": {"name": "Attribute", "state": "1"} for n in range(8)},
+        "attributes_left": 0,
         "state": "on",
     }
 
@@ -145,6 +164,7 @@ def _message(fields: bool = True, attributes: bool = True) -> dict[str, Any]:
             part["action_info"]["turn_on"]["fields"] = []
         if not attributes:
             part["attributes"] = {}
+            part["attributes_left"] = 8
     return {
         "v": 1,
         "type": "announce",
@@ -182,3 +202,96 @@ def test_announce_shrinks_fields_then_attributes_then_parts() -> None:
 
     parts = _fitted(bare - 1)
     assert [p["key"] for p in parts] == ["light.part_0", "light.part_1"]
+
+
+def test_lists_and_groups_travel_by_their_form() -> None:
+    """A list is one text, a group one value for each key under <attribute>.<key>; the rules on
+    places, secrets and the home network hold for every key, and anything deeper stays home."""
+    state = State(
+        "light.lamp",
+        "on",
+        {
+            "rgb_color": (255, 120, 0),
+            "effect_list": ["colorloop", "random"],
+            "empty": [],
+            "energy": {"L1": 230.1, "total": 12, "phases": [1, 2], "nested": {"a": 1}, "note": None},
+            "wifi": {"ssid": "Casa", "ip": "192.168.1.9", "ipAddress": "192.168.1.9", "rssi": -60},
+            "owner": {"accessToken": "abc", "gpsLatitude": 45.07, "homeCity": "Torino", "name": "x"},
+            "odd": {"with space": 1, 7: 2, "ok": True},
+        },
+    )
+    keys = attribute_keys(state)
+    assert keys == [
+        "effect_list", "empty", "energy.L1", "energy.phases", "energy.total", "odd.ok",
+        "owner.name", "rgb_color", "wifi.rssi",
+    ]
+    assert attribute_texts(state, keys) == {
+        "effect_list": "colorloop, random", "empty": "", "energy.L1": "230.1",
+        "energy.phases": "1, 2", "energy.total": "12", "odd.ok": "true", "owner.name": "x",
+        "rgb_color": "255, 120, 0", "wifi.rssi": "-60",
+    }
+    # Never, even if they were announced by mistake.
+    private = ["wifi.ssid", "wifi.ip", "wifi.ipAddress", "owner.accessToken", "owner.gpsLatitude",
+               "owner.homeCity", "energy.nested"]
+    assert attribute_keys(state, kept=private) == keys
+    assert attribute_texts(state, private) == {"energy.nested": "unknown"}
+    # A key of a group announced before stays while it has no value.
+    assert "energy.note" in attribute_keys(state, kept=["energy.note"])
+    assert attribute_texts(state, ["energy.note"]) == {"energy.note": "unknown"}
+    # What stays home for its form is told to the log, by name; what is private is not listed.
+    assert left_home(state) == {
+        "energy.nested": "a group inside a group",
+        "odd.*": "a key of the group is not made of letters, digits and _",
+    }
+
+
+def test_network_names_never_travel() -> None:
+    """The addresses of the home network and the name of its Wi-Fi stay home."""
+    state = State(
+        "sensor.plug",
+        "1",
+        {"ip": "192.168.1.9", "mac": "aa:bb", "ssid": "Casa", "bssid": "aa", "hostname": "plug",
+         "wifi_ssid": "Casa", "zip_code": "10121", "shipping": 3, "macro": "x"},
+    )
+    assert attribute_keys(state) == ["macro", "shipping"]
+
+
+def test_a_long_list_shows_its_cut() -> None:
+    """A list longer than a state ends with the sign of the cut."""
+    text = value_text([f"effect_{n}" for n in range(60)])
+    assert text is not None and len(text) == 255 and text.endswith("…")
+    assert value_text(["a", float("nan")]) is None
+
+
+def test_quantity_limit_and_key_room() -> None:
+    """At most 64 extra values for a part, the first in alphabetical order; a key that would not
+    fit a measure of Roraima stays home."""
+    state = State("sensor.many", "1", {f"value_{n:03d}": n for n in range(70)})
+    candidates = candidate_keys(state)
+    assert len(candidates) == 70 and len(attribute_keys(state)) == MAX_ATTRIBUTES == 64
+    assert attribute_keys(state) == candidates[:64]
+    part = "sensor." + "x" * 57
+    state = State("sensor.long", "1", {"a" * 40: {"b" * 22: 1, "c" * 23: 2}})
+    assert room_for(part) == 63
+    assert attribute_keys(state, room=room_for(part)) == ["a" * 40 + "." + "b" * 22]
+    assert left_home(state, room_for(part)) == {"a" * 40 + "." + "c" * 23: "its key is too long"}
+
+
+async def test_extra_values_over_the_limit_are_counted(
+    hass: HomeAssistant, server: FakeServer
+) -> None:
+    """A part with more extra values than the limit announces the first 64 and how many stay home;
+    a key of a group is named after its attribute."""
+    row = _entrance(hass)
+    hass.states.async_set(
+        "sensor.porta_batteria", "87", {**{f"value_{n:03d}": n for n in range(66)}, "cell": {"mv": 3100}}
+    )
+    entry = await _setup(hass, [row])
+    socket = server.sockets[0]
+    await wait_until(lambda: socket.of_type("announce_done"))
+    parts = {p["key"]: p for p in socket.of_type("announce")[0]["device"]["parts"]}
+    battery = next(p for k, p in parts.items() if k.startswith("sensor."))
+    assert len(battery["attributes"]) == 64 and battery["attributes_left"] == 3
+    assert battery["attributes"]["cell.mv"] == {"name": "cell.mv", "state": "3100"}
+    assert parts[LAMP_PART]["attributes_left"] == 0
+    await hass.config_entries.async_unload(entry.entry_id)

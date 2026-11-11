@@ -12,18 +12,21 @@ the devices you choose can be used in the rentals and services you sell on Rorai
   access token.
 - **You decide what Roraima can see and control.** At first no device is shared. You pick the devices
   in the integration options; Roraima receives only the name, manufacturer, model and the entities of
-  those devices, with their states and their simple attributes, and can act only on them. Everything
+  those devices, with their states and their attributes, and can act only on them. Everything
   else stays private, even if a request for it comes from Roraima.
 - **Roraima uses the actions Home Assistant offers for each entity.** The actions of a shared entity are
   the services of its own domain that Home Assistant applies to it, as in the automation editor: a lock
   is unlocked with `lock.unlock`, a cover is opened with `cover.open_cover`, a new kind of device brings
   its own services. A command carries only the fields Home Assistant describes for that service, each
-  checked: a number within its limits, yes or no, one of the listed choices, or a short text. A field
+  checked: a number within its limits, yes or no, one or more of the listed choices, a short text, a
+  colour, a length of time, a date, a date and time, or a free value written as a text (a word, or
+  a short list or group of simple values, at most two levels deep and 64 values). A field
   that points at another entity, device, area or target is never accepted, and each command reaches
   only the shared entity it names. A text that holds `://` or a backslash, starts with a slash,
   climbs a folder with `..` or starts with a scheme such as `file:` or `media-source:` is refused,
-  so Roraima cannot make Home Assistant open addresses of your home network or files. Roraima
-  cannot call any other service or restart Home Assistant.
+  also when it sits inside a free value, where a key naming another entity, device, area or target
+  is refused too: Roraima cannot make Home Assistant open addresses of your home network or files.
+  Roraima cannot call any other service or restart Home Assistant.
   Parameters outside their limits are refused, not adjusted.
 - **Scenes, scripts, automations and groups are never shared.** They run actions on other entities, so
   they could control devices you have not chosen; the same holds for any entity that lists other
@@ -36,16 +39,21 @@ the devices you choose can be used in the rentals and services you sell on Rorai
 - **Service entries are not offered.** Entries such as Backup, Sun or weather services are not devices
   you can rent out, so they never appear in the choice. Service entities of a shared device, such as
   a restart or factory reset button, are sent only as readings: Roraima can never press them.
-- **Attributes stay simple.** Only numbers, texts and yes/no values travel, up to 16 per entity. The
-  attributes that describe the entity (name, icon, picture, unit, class, supported features), lists,
-  values that hold a web address or a path and attributes whose name suggests a secret, such as a
-  token, are never sent.
+- **Attributes travel by their form.** Numbers, texts, yes/no values and moments in time travel. A
+  list of them travels as one text; a group of them travels as one value for each of its keys.
+  Anything deeper stays home. At most 64 values per entity are sent, the first in alphabetical
+  order: when an entity has more, the log of Home Assistant names the ones left out and Roraima
+  shows a notice. The attributes that describe the entity (name, icon, picture, unit, class,
+  supported features), values that hold a web address or a path and attributes or keys whose name
+  suggests a secret, such as a token, are never sent. To see what stayed home for its form, set
+  the log level of `custom_components.roraima` to `info`.
 - **Places stay home.** People, trackers and zones are never offered, nor an entity whose unique id,
   entity id, translation key or original name tells a place, such as the geocoded location of a
   phone, whose state is a street address. An attribute whose name tells a place (latitude,
   longitude, GPS, location, address, IP address, altitude, heading, postal code, city, street,
-  country and the like) is never sent, whatever entity holds it. The position of a cover is not a
-  place and is sent.
+  country and the like) or your home network (IP, MAC, host name, the name of the Wi-Fi) is never
+  sent, whatever entity holds it and also when it is a key inside a group. The position of a cover
+  is not a place and is sent.
 
 Names of actions, fields and attributes are sent in the language of your Home Assistant.
 

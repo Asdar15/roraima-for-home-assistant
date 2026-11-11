@@ -3,15 +3,19 @@
 Roraima keeps no list of commands (contract §2.5). The actions of a part are the services of the
 entity's own domain whose target, in Home Assistant's service descriptions, covers that entity:
 the same test Home Assistant makes when it offers the actions of an entity. A field is kept only in
-a kind that can be checked here: a number in its limits, yes or no, one of a few choices, a short
-text. A field that points at anything else of Home Assistant (an entity, a device, an area, a
-target...) never enters, so a command can move only the entity of its own part (law 3).
+a kind whose form can be checked here: a number in its limits, yes or no, one or more of a few
+choices, a short text, a colour, a length of time, a date, a moment, or a free object written as a
+text and read back with its own form and limits. A field that points at anything else of Home
+Assistant (an entity, a device, an area, a target...) never enters, so a command can move only the
+entity of its own part (law 3).
 """
 
 from __future__ import annotations
 
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
+import datetime as dt
+import json
 import logging
 import math
 import re
@@ -22,7 +26,17 @@ from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.service import async_get_all_descriptions
 
-from .const import ACTION_FORM, LABEL_MAX, MAX_ACTIONS, MAX_FIELDS, MAX_OPTIONS, TEXT_MAX, UNIT_MAX
+from .const import (
+    ACTION_FORM,
+    DURATION_MAX,
+    LABEL_MAX,
+    MAX_ACTIONS,
+    MAX_FIELDS,
+    MAX_OBJECT_ITEMS,
+    MAX_OPTIONS,
+    TEXT_MAX,
+    UNIT_MAX,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,6 +46,22 @@ NUMBER = "number"
 BOOLEAN = "boolean"
 SELECT = "select"
 TEXT = "text"
+COLOR = "color"
+DURATION = "duration"
+DATETIME = "datetime"
+DATE = "date"
+MULTI = "multi"
+OBJECT = "object"
+
+# The services the log already named as left home, so each is written once.
+_SAID: set[tuple[str, str]] = set()
+_SAID_MAX = 4096
+# What a field answers to a value it does not accept.
+_REFUSED: Any = object()
+_DATE_FORM = re.compile(r"\d{4}-\d{2}-\d{2}")
+_DATETIME_FORM = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
+# How deep a free object may go: a value, a list or a group of values, or one of those inside one.
+_OBJECT_DEPTH = 2
 
 # Fields that would aim the call at another target than the part's own entity (law 3).
 TARGET_KEYS = frozenset({"entity_id", "device_id", "area_id", "floor_id", "label_id", "target"})
@@ -64,9 +94,60 @@ def names_address(text: str) -> bool:
     )
 
 
+def _plain_text(value: Any) -> bool:
+    return isinstance(value, str) and len(value) <= TEXT_MAX and not _CONTROL.search(value)
+
+
+def _refuse_constant(_name: str) -> Any:
+    raise ValueError
+
+
+def _object_ok(value: Any, depth: int, room: list[int]) -> bool:
+    """Whether a value read from a free object keeps the form and the limits (contract §2.5)."""
+    room[0] -= 1
+    if room[0] < 0:
+        return False
+    if isinstance(value, bool):
+        return True
+    if isinstance(value, (int, float)):
+        return _finite(value)
+    if isinstance(value, str):
+        return _plain_text(value) and not names_address(value)
+    if depth <= 0:
+        return False
+    if isinstance(value, list):
+        return all(_object_ok(item, depth - 1, room) for item in value)
+    if isinstance(value, dict):
+        return all(
+            _plain_text(key)
+            and len(key) <= LABEL_MAX
+            and key not in TARGET_KEYS
+            and not names_address(key)
+            and _object_ok(item, depth - 1, room)
+            for key, item in value.items()
+        )
+    return False
+
+
+def object_value(text: Any) -> Any:
+    """What a free object written as a text is for the service, or _REFUSED.
+
+    A text that reads as JSON is that value, if it is made of simple values in lists and groups
+    at most two deep, at most 64 in all, with no text that names an address and no key that names
+    another target. Any other text is the text itself.
+    """
+    if not _plain_text(text) or not text.strip():
+        return _REFUSED
+    try:
+        value = json.loads(text, parse_constant=_refuse_constant)
+    except (ValueError, RecursionError):
+        return _REFUSED if names_address(text) else text
+    return value if _object_ok(value, _OBJECT_DEPTH, [MAX_OBJECT_ITEMS]) else _REFUSED
+
+
 @dataclass(frozen=True, slots=True)
 class Field:
-    """One field of a service, in one of the four kinds a command can carry."""
+    """One field of a service, in one of the kinds a command can carry."""
 
     key: str
     kind: str
@@ -79,21 +160,48 @@ class Field:
 
     def accepts(self, value: Any) -> bool:
         """Whether a value sent by Roraima has this field's kind and limits."""
-        if self.kind == NUMBER:
-            if isinstance(value, bool) or not isinstance(value, (int, float)):
-                return False
-            if not math.isfinite(value):
-                return False
-            return (self.low is None or value >= self.low) and (
-                self.high is None or value <= self.high
-            )
+        return self.data(value) is not _REFUSED
+
+    def data(self, value: Any) -> Any:
+        """The value as the service wants it, or _REFUSED unless it has this field's kind and limits."""
+        if self.kind in (NUMBER, DURATION):
+            if not _is_number(value) or not _finite(value):
+                return _REFUSED
+            if (self.low is not None and value < self.low) or (
+                self.high is not None and value > self.high
+            ):
+                return _REFUSED
+            if self.kind == NUMBER:
+                return value
+            minutes, seconds = divmod(value, 60)
+            hours, minutes = divmod(int(minutes), 60)
+            return {"hours": hours, "minutes": minutes, "seconds": seconds}
         if self.kind == BOOLEAN:
-            return isinstance(value, bool)
-        if not isinstance(value, str) or len(value) > TEXT_MAX or _CONTROL.search(value):
-            return False
+            return value if isinstance(value, bool) else _REFUSED
+        if self.kind == COLOR:
+            if not isinstance(value, list) or len(value) != 3:
+                return _REFUSED
+            return list(value) if all(_is_int(c) and 0 <= c <= 255 for c in value) else _REFUSED
+        if self.kind == MULTI:
+            if not isinstance(value, list) or not value or not all(_plain_text(v) for v in value):
+                return _REFUSED
+            options = self.options or ()
+            if len(set(value)) != len(value) or any(v not in options for v in value):
+                return _REFUSED
+            return list(value)
+        if self.kind == OBJECT:
+            return object_value(value)
+        if not _plain_text(value):
+            return _REFUSED
         if self.kind == TEXT:
-            return not names_address(value)
-        return value in (self.options or ())
+            return _REFUSED if names_address(value) else value
+        if self.kind == DATE:
+            ok = _DATE_FORM.fullmatch(value) and _is_moment(value, "%Y-%m-%d")
+            return value if ok else _REFUSED
+        if self.kind == DATETIME:
+            ok = _DATETIME_FORM.fullmatch(value) and _is_moment(value, "%Y-%m-%d %H:%M:%S")
+            return value if ok else _REFUSED
+        return value if value in (self.options or ()) else _REFUSED
 
 
 type Actions = dict[str, dict[str, Field]]
@@ -126,6 +234,14 @@ def part_actions(descriptions: Descriptions, entry: er.RegistryEntry, state: Sta
             continue
         fields = _fields(description, state)
         if fields is None:
+            if (entry.entity_id, service) not in _SAID and len(_SAID) < _SAID_MAX:
+                _SAID.add((entry.entity_id, service))
+                _LOGGER.info(
+                    "%s.%s stays home for %s: a field it requires cannot be carried",
+                    entry.domain,
+                    service,
+                    entry.entity_id,
+                )
             continue
         actions[service] = fields
         if len(actions) == MAX_ACTIONS:
@@ -143,9 +259,10 @@ def check_params(fields: Mapping[str, Field], params: Any) -> dict[str, Any] | N
         return None
     if any(field.required and key not in params for key, field in fields.items()):
         return None
-    if not all(fields[key].accepts(value) for key, value in params.items()):
+    data = {key: fields[key].data(value) for key, value in params.items()}
+    if any(value is _REFUSED for value in data.values()):
         return None
-    return dict(params)
+    return data
 
 
 def _applies(description: Mapping[str, Any], entry: er.RegistryEntry, state: State | None) -> bool:
@@ -247,7 +364,7 @@ def _shown(field_filter: Any, state: State | None) -> bool:
 
 
 def _field(key: str, config: Mapping[str, Any], required: bool) -> Field | None:
-    """A field in one of the four kinds, or None if its kind is anything else."""
+    """A field in one of the kinds a command can carry, or None if its kind is anything else."""
     if not ACTION_FORM.fullmatch(key) or key in TARGET_KEYS:
         return None
     selector = config.get("selector")
@@ -256,8 +373,26 @@ def _field(key: str, config: Mapping[str, Any], required: bool) -> Field | None:
     kind, settings = next(iter(selector.items()))
     if settings is None:
         settings = {}
-    if not isinstance(settings, Mapping) or settings.get("multiple"):
+    if not isinstance(settings, Mapping):
         return None
+    if kind == "object":
+        return None if _HOST_PATH.search(key) else Field(key, OBJECT, required)
+    if settings.get("multiple"):
+        # More than one value: some of a few choices, or a free list written as a text.
+        if kind == "select":
+            options = None if settings.get("custom_value") else _options(settings.get("options"))
+            return Field(key, OBJECT if options is None else MULTI, required, options=options)
+        if kind == "text" and not _HOST_PATH.search(key):
+            return Field(key, OBJECT, required)
+        return None
+    if kind == "color_rgb":
+        return Field(key, COLOR, required)
+    if kind == "duration":
+        return Field(key, DURATION, required, low=0, high=DURATION_MAX, unit="s")
+    if kind == "datetime":
+        return Field(key, DATETIME, required)
+    if kind == "date":
+        return Field(key, DATE, required)
     if kind == "number":
         return Field(
             key,
@@ -331,6 +466,22 @@ def _number(value: Any) -> float | None:
     if not _is_number(value) or not math.isfinite(value):
         return None
     return int(value) if float(value).is_integer() else float(value)
+
+
+def _finite(value: float) -> bool:
+    """A number a service can take: finite, and no whole number too large to be one."""
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
+
+
+def _is_moment(text: str, form: str) -> bool:
+    try:
+        dt.datetime.strptime(text, form)
+    except ValueError:
+        return False
+    return True
 
 
 def _unit(value: Any) -> str | None:

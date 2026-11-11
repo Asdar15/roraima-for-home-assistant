@@ -14,16 +14,29 @@ from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 
 from .actions import Descriptions, async_descriptions, field_configs, field_info, part_actions
-from .attributes import attribute_keys, attribute_texts
-from .const import PROTOCOL_VERSION, TEXT_MAX
+from .attributes import attribute_texts, candidate_keys, left_home, room_for
+from .const import MAX_ATTRIBUTES, PROTOCOL_VERSION, TEXT_MAX
 from .ids import device_row_id
-from .names import Names, async_names
+from .names import Names, async_names, label
 from .selection import Row
 
 _LOGGER = logging.getLogger(__name__)
 
 # What a part announced: each action with the keys of its fields.
 type PartActions = dict[str, frozenset[str]]
+
+# What the log already said, so a value that stays home is written once and not at every announce.
+_SAID: set[tuple[str, ...]] = set()
+_SAID_MAX = 4096
+
+
+def _once(*what: str) -> bool:
+    if what in _SAID:
+        return False
+    if len(_SAID) >= _SAID_MAX:
+        _SAID.clear()
+    _SAID.add(what)
+    return True
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,6 +87,40 @@ def _action_info(
     return info
 
 
+def _attribute_name(
+    catalog: Catalog, entry: er.RegistryEntry, state: State | None, key: str
+) -> str:
+    """The name of an extra value; a key of a group follows the name of its attribute."""
+    name, dot, piece = key.partition(".")
+    base = catalog.names.attribute_name(entry, state, name)
+    if not dot:
+        return base
+    # Without a translation the name is the key itself, which Roraima cleans by its form.
+    return key if base == name else label(f"{base} · {piece}", key)
+
+
+def _extra_values(
+    entry: er.RegistryEntry, state: State | None, key: str, kept: Collection[str]
+) -> tuple[list[str], int]:
+    """The extra values this part announces and how many stay home over the limit of quantity."""
+    room = room_for(key)
+    candidates = candidate_keys(state, kept, room)
+    keys = candidates[:MAX_ATTRIBUTES]
+    left = len(candidates) - len(keys)
+    if left and _once("over", entry.entity_id, str(len(candidates))):
+        _LOGGER.warning(
+            "%s has %s extra values, more than the %s Roraima keeps for one part: leaving out %s",
+            entry.entity_id,
+            len(candidates),
+            MAX_ATTRIBUTES,
+            ", ".join(candidates[MAX_ATTRIBUTES:]),
+        )
+    for attribute, why in left_home(state, room).items():
+        if _once("home", entry.entity_id, attribute, why):
+            _LOGGER.info("%s of %s stays home: %s", attribute, entry.entity_id, why)
+    return keys, left
+
+
 def _part(
     hass: HomeAssistant,
     catalog: Catalog,
@@ -88,7 +135,7 @@ def _part(
         device_class = state.attributes.get("device_class")
     unit = state.attributes.get(ATTR_UNIT_OF_MEASUREMENT) if state is not None else None
     actions = part_actions(catalog.descriptions, entry, state)
-    keys = attribute_keys(state, kept)
+    keys, left = _extra_values(entry, state, key, kept)
     texts = attribute_texts(state, keys)
     return {
         "key": key,
@@ -101,11 +148,13 @@ def _part(
         "action_info": _action_info(catalog, entry, actions),
         "attributes": {
             attribute: {
-                "name": catalog.names.attribute_name(entry, state, attribute),
+                "name": _attribute_name(catalog, entry, state, attribute),
                 "state": texts[attribute],
             }
             for attribute in keys
         },
+        # How many extra values stay home over a limit of quantity or of bytes: Roraima says it.
+        "attributes_left": left,
         "state": state_text(state),
     }
 
@@ -166,6 +215,7 @@ def _strip_fields(part: dict[str, Any]) -> bool:
 def _strip_attributes(part: dict[str, Any]) -> bool:
     if not part["attributes"]:
         return False
+    part["attributes_left"] = part.get("attributes_left", 0) + len(part["attributes"])
     part["attributes"] = {}
     return True
 
