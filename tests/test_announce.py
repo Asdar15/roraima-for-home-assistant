@@ -9,8 +9,10 @@ import json
 from typing import Any
 
 from homeassistant.core import HomeAssistant, State
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.translation import async_get_translations
-from pytest_homeassistant_custom_component.common import async_mock_service
+from pytest_homeassistant_custom_component.common import MockConfigEntry, async_mock_service
 
 from custom_components.roraima.announce import _fit
 from custom_components.roraima.attributes import (
@@ -22,6 +24,7 @@ from custom_components.roraima.attributes import (
     value_text,
 )
 from custom_components.roraima.const import MAX_ATTRIBUTES
+from custom_components.roraima.ids import part_key
 
 from .conftest import FakeServer, wait_until
 from .test_commands import LAMP_PART, _entrance
@@ -251,9 +254,52 @@ def test_network_names_never_travel() -> None:
         "sensor.plug",
         "1",
         {"ip": "192.168.1.9", "mac": "aa:bb", "ssid": "Casa", "bssid": "aa", "hostname": "plug",
-         "wifi_ssid": "Casa", "zip_code": "10121", "shipping": 3, "macro": "x"},
+         "wifi_ssid": "Casa", "zip_code": "10121", "shipping": 3, "macro": "x",
+         # A Tasmota group: its keys start with a capital, and an acronym is all in capitals.
+         "net": {"Hostname": "plug", "IPAddress": "192.168.1.9", "MACAddress": "aa:bb", "Mac": "aa",
+                 "IPAddr": "192.168.1.9", "IPv4Address": "192.168.1.9", "SSId": "Casa",
+                 "GPSLatitude": 45.07, "GPSAccuracy": 5, "ZIPCode": "10121", "APIKey": "abc",
+                 "RSSI": -60, "LinkCount": 3, "HTTPPort": 80}},
     )
-    assert attribute_keys(state) == ["macro", "shipping"]
+    assert attribute_keys(state) == ["macro", "net.HTTPPort", "net.LinkCount", "net.RSSI", "shipping"]
+
+
+async def test_network_entities_stay_home_and_addresses_are_no_state(
+    hass: HomeAssistant, server: FakeServer
+) -> None:
+    """An entity whose names tell the home network is not shared: the Wi-Fi or a host anywhere in
+    a name, ip and mac only as the last word or before address. A state that is an address or a
+    path travels as unknown."""
+    owner = MockConfigEntry(domain="demo")
+    owner.add_to_hass(hass)
+    router = dr.async_get(hass).async_get_or_create(
+        config_entry_id=owner.entry_id, identifiers={("demo", "router")}, name="Router"
+    )
+    registry = er.async_get(hass)
+    home = ["router_ssid", "x_external_ip", "x_hostname", "wan_ip_address", "lan_mac_addr", "ap_bssid_5g"]
+    shared = ["mac_mini", "vip_lounge_temperature", "ip_camera_motion", "macro_scene_button", "stream"]
+    for name in home + shared:
+        domain = "switch" if name == "mac_mini" else "sensor"
+        registry.async_get_or_create(
+            domain, "demo", f"router-{name}", device_id=router.id, suggested_object_id=name
+        )
+        hass.states.async_set(f"{domain}.{name}", "on" if domain == "switch" else "1")
+    hass.states.async_set("sensor.stream", "rtsp://user:secret@192.168.1.7/live")
+    entry = await _setup(hass, [f"d{router.id}"])
+    socket = server.sockets[0]
+    await wait_until(lambda: socket.of_type("announce_done"))
+    parts = {p["key"]: p for p in socket.of_type("announce")[0]["device"]["parts"]}
+    assert sorted(parts) == sorted(
+        part_key("switch" if name == "mac_mini" else "sensor", "demo", f"router-{name}")
+        for name in shared
+    )
+    assert parts[part_key("sensor", "demo", "router-stream")]["state"] == "unknown"
+    hass.states.async_set("sensor.stream", "/config/www/snap.jpg?token=abc")
+    hass.states.async_set("sensor.vip_lounge_temperature", "2")
+    await wait_until(lambda: socket.of_type("state"))
+    sent = json.dumps(socket.sent)
+    assert "rtsp" not in sent and "snap.jpg" not in sent and "192.168.1.7" not in sent
+    await hass.config_entries.async_unload(entry.entry_id)
 
 
 def test_a_long_list_shows_its_cut() -> None:

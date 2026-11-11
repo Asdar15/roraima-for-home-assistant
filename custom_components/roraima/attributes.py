@@ -52,8 +52,10 @@ _NETWORK = re.compile(r"(^|_)(ip|ipv4|ipv6|mac|ssid|bssid|hostname)(_|$)")
 # An address or a path can carry a key in it (a picture or a stream with ?token=...), and a path
 # shows the files of the host: neither leaves.
 _ADDRESS = re.compile(r"://|^/|[?&][a-z_]*token=", re.IGNORECASE)
-# The keys of a group are often written ipAddress: read them as ip_address too.
+# The keys of a group are often written ipAddress: read them as ip_address too. With an acronym
+# in capitals (IPAddress, GPSLatitude) the word starts at its last capital: ip_address.
 _CAMEL = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
+_ACRONYM = re.compile(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")
 
 UNKNOWN = "unknown"
 _CUT = "…"
@@ -70,10 +72,15 @@ def _simple_text(value: Any) -> str | None:
         return float.__repr__(value) if math.isfinite(value) else None
     if isinstance(value, str):
         text = str.__str__(value)
-        return None if _ADDRESS.search(text) else text[:TEXT_MAX]
+        return None if holds_address(text) else text[:TEXT_MAX]
     if isinstance(value, (dt.datetime, dt.date, dt.time)):
         return value.isoformat()
     return None
+
+
+def holds_address(text: str) -> bool:
+    """Whether a value, or the state of a part, holds an address, a path or a key in a query."""
+    return _ADDRESS.search(text.strip()) is not None
 
 
 def value_text(value: Any) -> str | None:
@@ -108,12 +115,21 @@ def shareable(name: Any) -> bool:
     )
 
 
+def readings(key: str) -> tuple[str, str, str]:
+    """A key as it may be read: all in lower case, with each capital after a small letter as a
+    separator (ipAddress), and with an acronym ending at its last capital (IPAddress).
+
+    No reading is enough alone: the third reads IPv4Address as i_pv4_address.
+    """
+    return key.lower(), _CAMEL.sub("_", key).lower(), _ACRONYM.sub("_", key).lower()
+
+
 def _piece_shareable(piece: Any) -> bool:
     """Whether a key of a group may ever travel: its form, and the same names as an attribute."""
     return (
         isinstance(piece, str)
         and PIECE_FORM.fullmatch(piece) is not None
-        and not _private(piece.lower(), _CAMEL.sub("_", piece).lower())
+        and not _private(*readings(piece))
     )
 
 

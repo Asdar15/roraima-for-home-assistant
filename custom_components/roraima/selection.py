@@ -40,11 +40,19 @@ RUNNER_DOMAINS = frozenset({"automation", "scene", "script"})
 # state).
 LOCATION_DOMAINS = re.compile(r"^(person|device_tracker|zone)$")
 LOCATION_WORD = re.compile(r"(^|_)(geocoded|location|address|gps|coordinates)(_|$)")
-_NOT_ALNUM = re.compile(r"[^a-z0-9]")
+# What tells the home network apart is not shared either, as for attributes (contract §2.5). The
+# names of entities are free texts, so the rule is narrower here: the name of the Wi-Fi or of a
+# host anywhere, but ip and mac only as the last word or before address or addr, so that a plug
+# called "Mac mini" is still shared.
+NETWORK_WORD = re.compile(
+    r"(^|_)(ssid|bssid|hostname)(_|$)|(^|_)(ip|ipv4|ipv6|mac)(_(address|addr)(_|$)|$)"
+)
+_NOT_ALNUM = re.compile(r"[^a-z0-9]+")
 
 
 def _tells_a_place(entry: er.RegistryEntry) -> bool:
-    """Whether the unique id, object id, translation key or original name tells a place.
+    """Whether the unique id, object id, translation key or original name tells a place or the
+    home network.
 
     Read in full, never on the part key: a long unique id (a phone's is 64 hexadecimals and then
     `_geocoded_location`) loses its end when the key is shortened.
@@ -55,10 +63,13 @@ def _tells_a_place(entry: er.RegistryEntry) -> bool:
         entry.translation_key,
         entry.original_name,
     )
-    return any(
-        isinstance(name, str) and LOCATION_WORD.search(_NOT_ALNUM.sub("_", name.lower())) is not None
-        for name in names
-    )
+    for name in names:
+        if not isinstance(name, str):
+            continue
+        words = _NOT_ALNUM.sub("_", name.lower()).strip("_")
+        if LOCATION_WORD.search(words) or NETWORK_WORD.search(words):
+            return True
+    return False
 
 
 def _shareable(hass: HomeAssistant, entry: er.RegistryEntry) -> bool:

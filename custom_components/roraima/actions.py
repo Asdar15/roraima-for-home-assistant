@@ -26,6 +26,7 @@ from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.service import async_get_all_descriptions
 
+from .attributes import readings
 from .const import (
     ACTION_FORM,
     DURATION_MAX,
@@ -123,6 +124,8 @@ def _object_ok(value: Any, depth: int, room: list[int]) -> bool:
             and len(key) <= LABEL_MAX
             and key not in TARGET_KEYS
             and not names_address(key)
+            # A key naming a file or a folder acts on the host, as a field with that name would.
+            and not any(_HOST_PATH.search(reading) for reading in readings(key))
             and _object_ok(item, depth - 1, room)
             for key, item in value.items()
         )
@@ -134,7 +137,7 @@ def object_value(text: Any) -> Any:
 
     A text that reads as JSON is that value, if it is made of simple values in lists and groups
     at most two deep, at most 64 in all, with no text that names an address and no key that names
-    another target. Any other text is the text itself.
+    another target, a file or a folder. Any other text is the text itself.
     """
     if not _plain_text(text) or not text.strip():
         return _REFUSED

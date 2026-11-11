@@ -24,8 +24,10 @@ the devices you choose can be used in the rentals and services you sell on Rorai
   that points at another entity, device, area or target is never accepted, and each command reaches
   only the shared entity it names. A text that holds `://` or a backslash, starts with a slash,
   climbs a folder with `..` or starts with a scheme such as `file:` or `media-source:` is refused,
-  also when it sits inside a free value, where a key naming another entity, device, area or target
-  is refused too: Roraima cannot make Home Assistant open addresses of your home network or files.
+  also when it sits inside a free value, where a key naming another entity, device, area, target,
+  file or folder is refused too: Roraima cannot make Home Assistant open addresses of your home
+  network or files. For this reason a raw code written as `b64:...` is refused as well, while
+  commands sent by their name work.
   Roraima cannot call any other service or restart Home Assistant.
   Parameters outside their limits are refused, not adjusted.
 - **Scenes, scripts, automations and groups are never shared.** They run actions on other entities, so
@@ -53,7 +55,10 @@ the devices you choose can be used in the rentals and services you sell on Rorai
   longitude, GPS, location, address, IP address, altitude, heading, postal code, city, street,
   country and the like) or your home network (IP, MAC, host name, the name of the Wi-Fi) is never
   sent, whatever entity holds it and also when it is a key inside a group. The position of a cover
-  is not a place and is sent.
+  is not a place and is sent. An entity whose own names tell your home network is not shared
+  either: the name of the Wi-Fi or a host name anywhere in the name, IP and MAC when they are the
+  last word or come before "address". A state or a value that is a web address or a path is sent
+  as unknown.
 
 Names of actions, fields and attributes are sent in the language of your Home Assistant.
 

@@ -14,7 +14,14 @@ from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 
 from .actions import Descriptions, async_descriptions, field_configs, field_info, part_actions
-from .attributes import attribute_texts, candidate_keys, left_home, room_for
+from .attributes import (
+    UNKNOWN,
+    attribute_texts,
+    candidate_keys,
+    holds_address,
+    left_home,
+    room_for,
+)
 from .const import MAX_ATTRIBUTES, PROTOCOL_VERSION, TEXT_MAX
 from .ids import device_row_id
 from .names import Names, async_names, label
@@ -60,8 +67,11 @@ def _text(value: Any) -> str | None:
 
 
 def state_text(state: State | None) -> str:
-    """The state of a part as Roraima receives it."""
-    return str(state.state)[:TEXT_MAX] if state is not None else "unavailable"
+    """The state of a part as Roraima receives it; unknown if it holds an address or a path."""
+    if state is None:
+        return "unavailable"
+    text = str(state.state)
+    return UNKNOWN if holds_address(text) else text[:TEXT_MAX]
 
 
 def _action_info(

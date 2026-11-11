@@ -243,6 +243,11 @@ async def test_fields_out_of_their_form_refuse_the_command(hass: HomeAssistant, 
         '{"data": {"entity_id": "lock.altra"}}',
         '[{"target": "lock.altra"}]',
         '{"/etc/passwd": 1}',
+        '{"filename": "www/snap.jpg"}',
+        '{"path": "config/secrets.yaml"}',
+        '{"filePath": "www/snap.jpg"}',
+        '{"options": {"Target_Dir": "www"}}',
+        '[{"FILEName": "snap.jpg"}]',
         '[[["too deep"]]]',
         '{"a": {"b": {"c": 1}}}',
         "null",
@@ -259,5 +264,9 @@ async def test_free_object_keeps_form_and_limits(hass: HomeAssistant, text: str)
     fields = part_actions(DESCRIPTIONS, _lock(hass), State("lock.porta", "locked"))["send"]
     assert check_params(fields, {"command": text}) is None
     assert check_params(fields, {"command": "[" + ", ".join(["1"] * 63) + "]"}) is not None
+    # A key that only holds those letters inside another word is an ordinary key.
+    assert check_params(fields, {"command": '{"profile": "eco", "pathway": 2}'}) == {
+        "command": {"profile": "eco", "pathway": 2}
+    }
     # What does not read as JSON is a plain text, on both sides of the connection.
     assert check_params(fields, {"command": "[NaN]"}) == {"command": "[NaN]"}
