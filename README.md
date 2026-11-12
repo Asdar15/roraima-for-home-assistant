@@ -58,7 +58,8 @@ the devices you choose can be used in the rentals and services you sell on Rorai
   is not a place and is sent. An entity whose own names tell your home network is not shared
   either: the name of the Wi-Fi or a host name anywhere in the name, IP and MAC when they are the
   last word or come before "address". A state or a value that is a web address or a path is sent
-  as unknown.
+  as unknown, and so is one that is an IP or MAC address, whatever its name; a list with such a
+  value in it is sent as unknown too.
 
 Names of actions, fields and attributes are sent in the language of your Home Assistant.
 

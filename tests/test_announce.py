@@ -14,7 +14,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.translation import async_get_translations
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_mock_service
 
-from custom_components.roraima.announce import _fit
+from custom_components.roraima.announce import _fit, state_text
 from custom_components.roraima.attributes import (
     attribute_keys,
     attribute_texts,
@@ -262,6 +262,29 @@ def test_network_names_never_travel() -> None:
                  "RSSI": -60, "LinkCount": 3, "HTTPPort": 80}},
     )
     assert attribute_keys(state) == ["macro", "net.HTTPPort", "net.LinkCount", "net.RSSI", "shipping"]
+
+
+# The same values as the test of Roraima's gateway (contract §2.5).
+NETWORK_VALUES = ["192.168.1.1", "10.0.0.0/8", "fe80::1", "aa:bb:cc:dd:ee:ff", "A8-03-2A-BE-54-DC",
+                  "A8032ABE54DC", "casa, 192.168.1.20", "1.2.3.4", "192.168.1.5:1883", "[fe80::1]:8123",
+                  "fe80::1%eth0", "::ffff:192.168.1.1", "aabb.ccdd.eeff"]
+NOT_NETWORK = ["08:30", "12:34:56", "123456789012", "Ciao, arrivo", "21.5", "on", "255, 120, 0", "Mac mini"]
+
+
+def test_a_network_address_under_any_name_stays_home() -> None:
+    """An IP or a MAC is the home network whatever its name: as a value it does not travel, as the
+    state of a part it travels as unknown, and in a list it keeps the list home."""
+    for bad in NETWORK_VALUES:
+        assert value_text(bad) is None, bad
+        assert state_text(State("sensor.box", bad)) == "unknown", bad
+    for good in NOT_NETWORK:
+        assert value_text(good) == good, good
+        assert state_text(State("sensor.box", good)) == good, good
+    state = State(
+        "sensor.box", "1", {"gateway": "192.168.1.1", "peers": ["casa", "aa:bb:cc:dd:ee:ff"], "uptime": 12}
+    )
+    assert attribute_keys(state) == ["uptime"]
+    assert attribute_texts(state, ["gateway", "peers"]) == {"gateway": "unknown", "peers": "unknown"}
 
 
 async def test_network_entities_stay_home_and_addresses_are_no_state(

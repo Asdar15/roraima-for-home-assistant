@@ -4,9 +4,10 @@ An attribute travels when its value is a number, a text, yes/no or a moment in t
 values travels as one text; a group of them travels as one value for each of its keys, under
 `<attribute>.<key>`. Anything deeper stays home, and the log says so. The ones that describe the
 entity instead of measuring it (its name, icon, picture, unit, class, features) stay home too.
-Names that can hold a secret, values that hold an address or a path, and any name that tells a
-place or the home network (latitude, gps_accuracy, location_name, ip_address, ssid...) never leave,
-whether they name an attribute or a key inside one.
+Names that can hold a secret, values that hold an address or a path, values that are an IP or MAC
+address under any name, and any name that tells a place or the home network (latitude,
+gps_accuracy, location_name, ip_address, ssid...) never leave, whether they name an attribute or a
+key inside one.
 """
 
 from __future__ import annotations
@@ -52,6 +53,20 @@ _NETWORK = re.compile(r"(^|_)(ip|ipv4|ipv6|mac|ssid|bssid|hostname)(_|$)")
 # An address or a path can carry a key in it (a picture or a stream with ?token=...), and a path
 # shows the files of the host: neither leaves.
 _ADDRESS = re.compile(r"://|^/|[?&][a-z_]*token=", re.IGNORECASE)
+# An address of the home network under any name (an attribute gateway: 192.168.1.1), with the same forms as
+# Roraima (contract §2.5): IPv4 and IPv6, also with a prefix, a port, brackets, a zone or an IPv4
+# inside; a MAC with or without separators, also with dots. A time ("08:30:00") is not an IPv6: it
+# needs "::" or at least five groups. A version shaped as an IP ("1.2.3.4") is lost: the accepted price.
+_IPV4 = r"[0-9]{1,3}(?:\.[0-9]{1,3}){3}"
+_IPV6 = r"(?=[0-9a-f:.]*::|(?:[0-9a-f]{1,4}:){5})[0-9a-f:.]{3,45}(?:%[0-9a-z._-]{1,32})?"
+_IP_LIKE = re.compile(
+    rf"(?:{_IPV4}(?::[0-9]{{1,5}})?|{_IPV6}|\[{_IPV6}\](?::[0-9]{{1,5}})?)(?:/[0-9]{{1,3}})?",
+    re.IGNORECASE | re.ASCII,
+)
+_MAC_LIKE = re.compile(
+    r"[0-9a-f]{2}(?:[:-]?[0-9a-f]{2}){5}|[0-9a-f]{4}\.[0-9a-f]{4}\.[0-9a-f]{4}",
+    re.IGNORECASE | re.ASCII,
+)
 # The keys of a group are often written ipAddress: read them as ip_address too. With an acronym
 # in capitals (IPAddress, GPSLatitude) the word starts at its last capital: ip_address.
 _CAMEL = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
@@ -79,8 +94,21 @@ def _simple_text(value: Any) -> str | None:
 
 
 def holds_address(text: str) -> bool:
-    """Whether a value, or the state of a part, holds an address, a path or a key in a query."""
-    return _ADDRESS.search(text.strip()) is not None
+    """Whether a value, or the state of a part, holds an address, a path or a key in a query, or
+    is an address of the home network."""
+    return _ADDRESS.search(text.strip()) is not None or _network_address(text)
+
+
+def _network_address(text: str) -> bool:
+    """Whether the text is an IP or MAC address, or one piece of a list written as text ("a, b") is.
+
+    A number made of digits only is a measure, not a MAC without separators.
+    """
+    for piece in text.split(","):
+        piece = piece.strip()
+        if _IP_LIKE.fullmatch(piece) or (_MAC_LIKE.fullmatch(piece) and not piece.isdigit()):
+            return True
+    return False
 
 
 def value_text(value: Any) -> str | None:
