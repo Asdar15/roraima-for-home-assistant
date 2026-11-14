@@ -29,6 +29,7 @@ from .const import (
     CODE_PATTERN,
     CONF_CODE,
     CONF_DEVICES,
+    CONF_HUB,
     CONF_INSTANCE_ID,
     DOMAIN,
     MAX_DEVICES,
@@ -124,6 +125,22 @@ class RoraimaConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=CODE_SCHEMA,
             errors=errors,
             description_placeholders=PLACEHOLDERS,
+        )
+
+    async def async_step_import(
+        self, import_data: dict[str, Any]
+    ) -> ConfigFlowResult:
+        """A Roraima Hub pairs from its own file, without calling Roraima and with nothing shared."""
+        await self.async_set_unique_id(import_data[CONF_INSTANCE_ID])
+        self._abort_if_unique_id_configured()
+        return self.async_create_entry(
+            title="Roraima",
+            data={
+                CONF_CODE: import_data[CONF_CODE],
+                CONF_INSTANCE_ID: import_data[CONF_INSTANCE_ID],
+                CONF_HUB: True,
+            },
+            options={CONF_DEVICES: []},
         )
 
     async def async_step_devices(

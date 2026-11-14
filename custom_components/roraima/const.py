@@ -62,8 +62,18 @@ ISSUE_CONFLICT: Final = "instance_conflict"
 CONF_CODE: Final = "code"
 CONF_INSTANCE_ID: Final = "instance_id"
 CONF_DEVICES: Final = "devices"
+# A Roraima Hub writes its own pairing code in a file mounted into Home Assistant: nobody types it.
+CONF_HUB: Final = "hub"
+HUB_FILE: Final = "/roraima/abbinamento.json"
+HUB_FILE_ENV: Final = "RORAIMA_HUB_FILE"
+HUB_FILE_MAX: Final = 4096
 
 
 def tunnel_url() -> str:
     """Return the address of the Roraima connection endpoint."""
     return os.environ.get(TUNNEL_URL_ENV, "").strip() or TUNNEL_URL
+
+
+def hub_file() -> str:
+    """Return where a Roraima Hub leaves its pairing code."""
+    return os.environ.get(HUB_FILE_ENV, "").strip() or HUB_FILE

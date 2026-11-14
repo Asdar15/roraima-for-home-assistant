@@ -35,6 +35,7 @@ from .const import (
     ANNOUNCES_PER_SECOND,
     CONF_CODE,
     CONF_DEVICES,
+    CONF_HUB,
     CONF_INSTANCE_ID,
     DOMAIN,
     IDLE_TIMEOUT,
@@ -403,6 +404,13 @@ class RoraimaClient:
 
     @callback
     def _stop_with_issue(self, outcome: Outcome) -> None:
+        if self.entry.data.get(CONF_HUB):
+            # The Hub gets its next code from Roraima by itself: nobody here has one to type.
+            _LOGGER.warning("Roraima no longer accepts the code of this Roraima Hub (%s)", outcome)
+            self._set_status(
+                STATUS_REVOKED if outcome is Outcome.REVOKED else STATUS_DISCONNECTED
+            )
+            return
         issue = ISSUE_REVOKED if outcome is Outcome.REVOKED else ISSUE_CONFLICT
         ir.async_create_issue(
             self.hass,
