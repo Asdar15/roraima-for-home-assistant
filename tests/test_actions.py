@@ -57,6 +57,10 @@ DESCRIPTIONS: dict[str, dict[str, Any]] = {
             tags={"selector": {"select": {"multiple": True, "custom_value": True, "options": ["a"]}}},
             file_path={"selector": {"object": {}}},
             pictures={"selector": {"media": {}}},
+            snapshot_file={"selector": {"select": {"custom_value": True, "options": ["a"]}}},
+            recordingFolder={"selector": {"select": {"multiple": True, "custom_value": True, "options": ["a"]}}},
+            outputDir={"selector": {"text": {}}},
+            filePath={"selector": {"object": {}}},
         ),
         "reload": {"fields": {}},
     },
@@ -161,6 +165,13 @@ async def test_words_and_times_are_not_addresses(hass: HomeAssistant) -> None:
     fields = part_actions(DESCRIPTIONS, _lock(hass), State("lock.porta", "locked"))["unlock"]
     for value in ("Ciao: arrivo", "08:30", "1234", "heat_cool", "Eco 40-60", "Wait..", "3.5"):
         assert check_params(fields, {"code": value, "mode": value}) == {"code": value, "mode": value}
+
+
+async def test_no_field_names_a_file_or_a_folder(hass: HomeAssistant) -> None:
+    """A field naming a file or a folder never travels, whatever its kind and however its key is
+    written: a choice with a free value, a free list, a text, an object."""
+    fields = part_actions(DESCRIPTIONS, _lock(hass), State("lock.porta", "locked"))["send"]
+    assert not {"file_path", "snapshot_file", "recordingFolder", "outputDir", "filePath"} & set(fields)
 
 
 async def test_every_kind_of_field_a_command_can_carry(hass: HomeAssistant) -> None:

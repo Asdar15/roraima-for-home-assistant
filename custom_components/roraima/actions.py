@@ -68,6 +68,13 @@ _OBJECT_DEPTH = 2
 TARGET_KEYS = frozenset({"entity_id", "device_id", "area_id", "floor_id", "label_id", "target"})
 # A text naming a file or a folder (a snapshot, a recording) acts on the host, not on the part.
 _HOST_PATH = re.compile(r"(?:^|_)(?:file|filename|path|dir|directory|folder)(?:_|$)")
+
+
+def _names_host_path(key: str) -> bool:
+    """Whether a key names a file or a folder in any of the ways a key is read (filePath, output_dir)."""
+    return any(_HOST_PATH.search(reading) for reading in readings(key))
+
+
 _CONTROL = re.compile(r"[\x00-\x1f\x7f-\x9f]")
 _UNSAFE_UNIT = re.compile(r"[<>\"'&\x00-\x1f\x7f-\x9f]")
 # Selectors whose value is one plain text: a state of the entity itself, a time of day.
@@ -125,7 +132,7 @@ def _object_ok(value: Any, depth: int, room: list[int]) -> bool:
             and key not in TARGET_KEYS
             and not names_address(key)
             # A key naming a file or a folder acts on the host, as a field with that name would.
-            and not any(_HOST_PATH.search(reading) for reading in readings(key))
+            and not _names_host_path(key)
             and _object_ok(item, depth - 1, room)
             for key, item in value.items()
         )
@@ -379,13 +386,16 @@ def _field(key: str, config: Mapping[str, Any], required: bool) -> Field | None:
     if not isinstance(settings, Mapping):
         return None
     if kind == "object":
-        return None if _HOST_PATH.search(key) else Field(key, OBJECT, required)
+        return None if _names_host_path(key) else Field(key, OBJECT, required)
+    # A field naming a file or a folder never travels, whatever its kind: a choice with a free value is a text too.
+    if kind in ("select", *_TEXT_SELECTORS) and _names_host_path(key):
+        return None
     if settings.get("multiple"):
         # More than one value: some of a few choices, or a free list written as a text.
         if kind == "select":
             options = None if settings.get("custom_value") else _options(settings.get("options"))
             return Field(key, OBJECT if options is None else MULTI, required, options=options)
-        if kind == "text" and not _HOST_PATH.search(key):
+        if kind == "text":
             return Field(key, OBJECT, required)
         return None
     if kind == "color_rgb":
@@ -423,7 +433,7 @@ def _field(key: str, config: Mapping[str, Any], required: bool) -> Field | None:
         if options is None:
             return Field(key, TEXT, required)
         return Field(key, SELECT, required, options=options)
-    if kind in _TEXT_SELECTORS and not _HOST_PATH.search(key):
+    if kind in _TEXT_SELECTORS:
         return Field(key, TEXT, required)
     return None
 
